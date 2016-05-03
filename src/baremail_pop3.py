@@ -1,13 +1,16 @@
-import asyncore
 import asynchat
-import socket
-import mailbox
+import asyncore
 import logging
+import mailbox
+import mutex
+import socket
 
 # create logger
 log = logging.getLogger('baremail.pop3')
 
 CRLF = '\r\n'
+
+pop3_mutex = mutex.mutex()
 
 class pop3_handler(asynchat.async_chat):
     def __init__(self, sock, mbx):
@@ -24,6 +27,14 @@ class pop3_handler(asynchat.async_chat):
         self.msg_index = []
         self.delete_list = []
         id_number = 0;
+
+        self.mbx_lock = pop3_mutex.testandset()
+        if not self.mbx_lock:
+            log.info('S: -ERR Mailbox busy.  Try again later.')
+            self.push('-ERR Mailbox busy.  Try again later.')
+            self.close_when_done()
+            return
+
         try:
             for message_id, message in self.mbx.iteritems():
                 if message.get_subdir() == 'new':
@@ -33,9 +44,9 @@ class pop3_handler(asynchat.async_chat):
             log.debug('S: +OK POP3 server ready')
             self.push('+OK POP3 server ready')
         except mailbox.Error:
-            log.error('-ERR Error reading mailbox')
+            log.error('S: -ERR Error reading mailbox')
             self.push('-ERR Error reading mailbox')
-            self.close()
+            self.close_when_done()
 
     def collect_incoming_data(self, data):
         self.buffer.append(data)
@@ -63,6 +74,12 @@ class pop3_handler(asynchat.async_chat):
             if pop_cmd == self.handleQuit:
                 self.close_when_done()
         self.buffer = []
+
+    def handle_close(self):
+        log.info('POP3 Connection closed')
+        asynchat.async_chat.handle_close(self)
+        if self.mbx_lock:
+            pop3_mutex.unlock()
 
     # Overrides base class for convenience
     def push(self, msg):
