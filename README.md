@@ -32,7 +32,7 @@ BareMail offers **no security** whatsoever.  It is intended to run behind a fire
 either a single machine on the localhost interface or exposed to a LAN shared by trusted users.
 
 ## What It Does
-  * Accept email submissions on the SMPT port
+  * Accept email submissions on the SMTP port
   * Store email in a maildir folder
   * Serve those emails out the POP3 port
 
