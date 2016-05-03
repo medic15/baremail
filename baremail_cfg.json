@@ -1,0 +1,50 @@
+{
+  "daemon": {
+    "user": "nobody",
+    "maildir": "/tmp/MailboxDir",
+    "loglevel": "INFO"
+  },
+  "network": {
+    "smtp_port": 5051,
+    "smtp_host": "localhost",
+    "pop3_port": 5050,
+    "pop3_host": "localhost"
+  },
+  "logger_config": {
+    "version": 1,
+    "disable_existing_loggers": true,
+    "formatters": {
+      "simple": {
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        "datefmt": "%d %b %H:%M:%S"
+      }
+    },
+    "handlers": {
+      "console": {
+        "class": "logging.StreamHandler",
+        "level": "INFO",
+        "formatter": "simple",
+        "stream": "ext://sys.stdout"
+      },
+      "error_file_handler": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "level": "ERROR",
+        "formatter": "simple",
+        "filename": "/tmp/baremail.log",
+        "maxBytes": 10485760,
+        "backupCount": 20,
+        "encoding": "utf8"
+      }
+    },
+    "loggers": {
+      "baremail": {
+        "level": "INFO",
+        "handlers": [
+          "console",
+          "error_file_handler"
+        ],
+        "propagate": "no"
+      }
+    }
+  }
+}
