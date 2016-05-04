@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baremail_smtp module &mdash; BareMail 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="BareMail 0.1 documentation" href="index.html" />
+    <link rel="up" title="src" href="modules.html" />
+    <link rel="prev" title="baremail_pop3 module" href="baremail_pop3.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baremail_pop3.html" title="baremail_pop3 module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">BareMail 0.1 documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">src</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-baremail_smtp">
+<span id="baremail-smtp-module"></span><h1>baremail_smtp module<a class="headerlink" href="#module-baremail_smtp" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="baremail_smtp.smtp_handler">
+<em class="property">class </em><tt class="descclassname">baremail_smtp.</tt><tt class="descname">smtp_handler</tt><big>(</big><em>sock</em>, <em>mbx</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">asynchat.async_chat</span></tt></p>
+<dl class="attribute">
+<dt id="baremail_smtp.smtp_handler.STATE_COMMAND">
+<tt class="descname">STATE_COMMAND</tt><em class="property"> = 0</em><a class="headerlink" href="#baremail_smtp.smtp_handler.STATE_COMMAND" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="baremail_smtp.smtp_handler.STATE_DATA">
+<tt class="descname">STATE_DATA</tt><em class="property"> = 1</em><a class="headerlink" href="#baremail_smtp.smtp_handler.STATE_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.collect_incoming_data">
+<tt class="descname">collect_incoming_data</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.collect_incoming_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.found_terminator">
+<tt class="descname">found_terminator</tt><big>(</big><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.found_terminator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.handleData">
+<tt class="descname">handleData</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.handleEhlo">
+<tt class="descname">handleEhlo</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleEhlo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.handleHelo">
+<tt class="descname">handleHelo</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleHelo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.handleMail">
+<tt class="descname">handleMail</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleMail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.handleNoop">
+<tt class="descname">handleNoop</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleNoop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.handleQuit">
+<tt class="descname">handleQuit</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleQuit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.handleRcpt">
+<tt class="descname">handleRcpt</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleRcpt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.handleRset">
+<tt class="descname">handleRset</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleRset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.push">
+<tt class="descname">push</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.push" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_handler.runData">
+<tt class="descname">runData</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.runData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baremail_smtp.smtp_server">
+<em class="property">class </em><tt class="descclassname">baremail_smtp.</tt><tt class="descname">smtp_server</tt><big>(</big><em>host</em>, <em>port</em>, <em>mb</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_server" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">asyncore.dispatcher</span></tt></p>
+<dl class="method">
+<dt id="baremail_smtp.smtp_server.handle_accept">
+<tt class="descname">handle_accept</tt><big>(</big><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_server.handle_accept" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="baremail_pop3.html"
+                        title="previous chapter">baremail_pop3 module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/baremail_smtp.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baremail_pop3.html" title="baremail_pop3 module"
+             >previous</a> |</li>
+        <li><a href="index.html">BareMail 0.1 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >src</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2016, Samara Real-Time, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
