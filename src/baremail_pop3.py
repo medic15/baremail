@@ -285,8 +285,9 @@ class pop3_handler(asynchat.async_chat):
         account the two octet CRLF at the end of each line, we process each newly
         submitted message such that the lines are properly terminated for retreival.
 
-        Also, any lines in the message that begin with a '.' have it removed before
-        storage.  This is per the RFC specifying the message syntax.
+        Also, any lines in the message that begin with a '.' are byte stuffed
+        to avoid being mistaken for the message terminator.  This is per the
+        RFC specifying the message syntax.
         """
         norm_array = []
         msg_array = self.mbx.get_string(message_id).splitlines()

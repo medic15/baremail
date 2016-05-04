@@ -30,8 +30,8 @@ class smtp_handler(asynchat.async_chat):
         """Initialize minimal state and return greeting to client
         """
         asynchat.async_chat.__init__(self, sock=sock)
-        self.dispatch = dict(EHLO=self.handleEhlo, HELO=self.handleHelo,
-                             MAIL=self.handleMail, RCPT=self.handleOK,
+        self.dispatch = dict(EHLO=self.handleHelo, HELO=self.handleHelo,
+                             MAIL=self.handleOK, RCPT=self.handleOK,
                              DATA=self.handleData, RSET=self.handleOK,
                              NOOP=self.handleOK, QUIT=self.handleQuit)
         self.fqdn = socket.getfqdn()
@@ -125,11 +125,6 @@ class smtp_handler(asynchat.async_chat):
             self.data.append(msg)
         return ret_str
 
-    def handleEhlo(self, cmd, args):
-        """Acknowlege client with this server's domain name
-        """
-        return '250 {} {}'.format(self.fqdn, args)
-        
     def handleHelo(self, cmd, args):
         """Acknowlege client with this server's domain name
         """
