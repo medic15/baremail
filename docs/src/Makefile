@@ -50,6 +50,7 @@ rst:
 	sphinx-apidoc -o . ../../src
 
 install:
+	rm -rf ../html
 	mv _build/html ..
 
 clean:

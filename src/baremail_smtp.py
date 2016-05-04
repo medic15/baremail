@@ -1,3 +1,9 @@
+"""BareMail SMTP server
+
+Implements a simple SMTP server.  Commands implementing login or security
+features always return positive responses.
+"""
+
 import asyncore
 import asynchat
 import socket
@@ -10,15 +16,24 @@ log = logging.getLogger('baremail.smtp')
 CRLF = '\r\n'
 
 class smtp_handler(asynchat.async_chat):
+    """Service an individual POP3 connection.
+
+    Very little internal state is maintained during each session.  Two states
+    are implemented: COMMAND and DATA.  COMMAND is the default state.  DATA
+    is entered upon receipt of the DATA command.  The state returns to COMMAND
+    when the messages terminator '<CRLF>.<CRLF>' is received.
+    """
     STATE_COMMAND = 0
     STATE_DATA = 1
 
     def __init__(self, sock, mbx):
+        """Initialize minimal state and return greeting to client
+        """
         asynchat.async_chat.__init__(self, sock=sock)
         self.dispatch = dict(EHLO=self.handleEhlo, HELO=self.handleHelo,
-                             MAIL=self.handleMail, RCPT=self.handleRcpt,
-                             DATA=self.handleData, RSET=self.handleRset,
-                             NOOP=self.handleNoop, QUIT=self.handleQuit)
+                             MAIL=self.handleMail, RCPT=self.handleOK,
+                             DATA=self.handleData, RSET=self.handleOK,
+                             NOOP=self.handleOK, QUIT=self.handleQuit)
         self.fqdn = socket.getfqdn()
         self.mbx = mbx
         self.set_terminator(CRLF)
@@ -28,9 +43,21 @@ class smtp_handler(asynchat.async_chat):
         self.push('220 {}'.format(self.fqdn))
 
     def collect_incoming_data(self, data):
+        """Marshal data chunks into buffer
+        """
         self.buffer.append(data)
 
     def found_terminator(self):
+        """Process client command or data
+
+        In the COMMAND state, parses incoming client commands
+        and dispatches them to the appropriate handler.  The
+        command QUIT causes the handler to close after the response
+        is sent to the client.
+
+        In the DATA state, client input lines are handed off to runData()
+        to be marshalled into a message for the mailbox.
+        """
         msg = ''.join(self.buffer)
         if self.state == self.STATE_COMMAND:
             args = ''
@@ -65,11 +92,23 @@ class smtp_handler(asynchat.async_chat):
             self.data = []
         self.buffer = []
 
-    # Overrides base class for convenience
     def push(self, msg):
+        """Overrides base class for convenience
+
+        Every response to client ends in CRLF.  Adding it here
+        ensures consistency.
+        """
         asynchat.async_chat.push(self, msg + CRLF)
 
     def runData(self, msg):
+        """Process received message line from client
+
+        In the DATA state, the client is sending the messages one line at
+        a time.  Here the individual lines are collected until the message
+        terminator is received.  At that time, the message is converted to
+        the mail box format and stored then the state is returned to COMMAND
+        mode.
+        """
         ret_str = ''
         log.debug('C: {}'.format(msg))
         if msg == '.':
@@ -87,32 +126,34 @@ class smtp_handler(asynchat.async_chat):
         return ret_str
 
     def handleEhlo(self, cmd, args):
+        """Acknowlege client with this server's domain name
+        """
         return '250 {} {}'.format(self.fqdn, args)
         
     def handleHelo(self, cmd, args):
+        """Acknowlege client with this server's domain name
+        """
         return '250 {} {}'.format(self.fqdn, args)
 
-    def handleMail(self, cmd, args):
-        return '250 Ok'
-
-    def handleRcpt(self, cmd, args):
+    def handleOK(self, cmd, args):
+        """Acknowlege client
+        """
         return '250 Ok'
 
     def handleData(self, cmd, args):
+        """Enter state DATA and acknowlege client with termination
+        instruction.
+        """
         self.data = []
         self.state = self.STATE_DATA
         return '354 End data with <CR><LF>.<CR><LF>'
-
-    def handleRset(self, cmd, args):
-        self.data = []
-
-    def handleNoop(self, cmd, args):
-        return '250 Ok'
 
     def handleQuit(self, cmd, args):
         return '221 Bye'
 
 class smtp_server(asyncore.dispatcher):
+    """Listens on SMTP port and launch SMTP handler on connection.
+    """
     def __init__(self, host, port, mb):
         log.info('Serving SMTP on {}:{}'.format(host, port))
         asyncore.dispatcher.__init__(self)
@@ -123,6 +164,8 @@ class smtp_server(asyncore.dispatcher):
         self.listen(5)
 
     def handle_accept(self):
+        """Creates handler for each SMTP connection.
+        """
         pair = self.accept()
         if pair is not None:
             sock, addr = pair

@@ -52,10 +52,18 @@
             
   <div class="section" id="module-baremail_smtp">
 <span id="baremail-smtp-module"></span><h1>baremail_smtp module<a class="headerlink" href="#module-baremail_smtp" title="Permalink to this headline">¶</a></h1>
+<p>BareMail SMTP server</p>
+<p>Implements a simple SMTP server.  Commands implementing login or security
+features always return positive responses.</p>
 <dl class="class">
 <dt id="baremail_smtp.smtp_handler">
 <em class="property">class </em><tt class="descclassname">baremail_smtp.</tt><tt class="descname">smtp_handler</tt><big>(</big><em>sock</em>, <em>mbx</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">asynchat.async_chat</span></tt></p>
+<p>Service an individual POP3 connection.</p>
+<p>Very little internal state is maintained during each session.  Two states
+are implemented: COMMAND and DATA.  COMMAND is the default state.  DATA
+is entered upon receipt of the DATA command.  The state returns to COMMAND
+when the messages terminator &#8216;&lt;CRLF&gt;.&lt;CRLF&gt;&#8217; is received.</p>
 <dl class="attribute">
 <dt id="baremail_smtp.smtp_handler.STATE_COMMAND">
 <tt class="descname">STATE_COMMAND</tt><em class="property"> = 0</em><a class="headerlink" href="#baremail_smtp.smtp_handler.STATE_COMMAND" title="Permalink to this definition">¶</a></dt>
@@ -69,37 +77,45 @@
 <dl class="method">
 <dt id="baremail_smtp.smtp_handler.collect_incoming_data">
 <tt class="descname">collect_incoming_data</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.collect_incoming_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Marshal data chunks into buffer</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_smtp.smtp_handler.found_terminator">
 <tt class="descname">found_terminator</tt><big>(</big><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.found_terminator" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Process client command or data</p>
+<p>In the COMMAND state, parses incoming client commands
+and dispatches them to the appropriate handler.  The
+command QUIT causes the handler to close after the response
+is sent to the client.</p>
+<p>In the DATA state, client input lines are handed off to runData()
+to be marshalled into a message for the mailbox.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_smtp.smtp_handler.handleData">
 <tt class="descname">handleData</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleData" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Enter state DATA and acknowlege client with termination
+instruction.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_smtp.smtp_handler.handleEhlo">
 <tt class="descname">handleEhlo</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleEhlo" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Acknowlege client with this server&#8217;s domain name</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_smtp.smtp_handler.handleHelo">
 <tt class="descname">handleHelo</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleHelo" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Acknowlege client with this server&#8217;s domain name</p>
+</dd></dl>
 
 <dl class="method">
-<dt id="baremail_smtp.smtp_handler.handleMail">
-<tt class="descname">handleMail</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleMail" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="baremail_smtp.smtp_handler.handleNoop">
-<tt class="descname">handleNoop</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleNoop" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="baremail_smtp.smtp_handler.handleOK">
+<tt class="descname">handleOK</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleOK" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acknowlege client</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_smtp.smtp_handler.handleQuit">
@@ -107,24 +123,23 @@
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="baremail_smtp.smtp_handler.handleRcpt">
-<tt class="descname">handleRcpt</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleRcpt" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="baremail_smtp.smtp_handler.handleRset">
-<tt class="descname">handleRset</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.handleRset" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="baremail_smtp.smtp_handler.push">
 <tt class="descname">push</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.push" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Overrides base class for convenience</p>
+<p>Every response to client ends in CRLF.  Adding it here
+ensures consistency.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_smtp.smtp_handler.runData">
 <tt class="descname">runData</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_handler.runData" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Process received message line from client</p>
+<p>In the DATA state, the client is sending the messages one line at
+a time.  Here the individual lines are collected until the message
+terminator is received.  At that time, the message is converted to
+the mail box format and stored then the state is returned to COMMAND
+mode.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -132,10 +147,12 @@
 <dt id="baremail_smtp.smtp_server">
 <em class="property">class </em><tt class="descclassname">baremail_smtp.</tt><tt class="descname">smtp_server</tt><big>(</big><em>host</em>, <em>port</em>, <em>mb</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_server" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">asyncore.dispatcher</span></tt></p>
+<p>Listens on SMTP port and launch SMTP handler on connection.</p>
 <dl class="method">
 <dt id="baremail_smtp.smtp_server.handle_accept">
 <tt class="descname">handle_accept</tt><big>(</big><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_server.handle_accept" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Creates handler for each SMTP connection.</p>
+</dd></dl>
 
 </dd></dl>
 

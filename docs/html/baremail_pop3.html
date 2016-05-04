@@ -56,89 +56,147 @@
             
   <div class="section" id="module-baremail_pop3">
 <span id="baremail-pop3-module"></span><h1>baremail_pop3 module<a class="headerlink" href="#module-baremail_pop3" title="Permalink to this headline">¶</a></h1>
+<p>BareMail POP3 server</p>
+<p>Implements a simple POP3 server.  Commands implementing login or security
+features return positive responses to the client regardless of the
+state of the connection.</p>
+<p>Very little internal state is maintained during each session.  Only the state
+needed to identify messages for retreival or deletion is kept.</p>
 <dl class="class">
 <dt id="baremail_pop3.pop3_handler">
 <em class="property">class </em><tt class="descclassname">baremail_pop3.</tt><tt class="descname">pop3_handler</tt><big>(</big><em>sock</em>, <em>mbx</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">asynchat.async_chat</span></tt></p>
+<p>Service an individual POP3 connection.</p>
+<p>Enforces a limit of one connected client at a time.  Supports
+leaving messages in the mailbox until deleted by client.  This
+allows multiple clients to retrieve copies of the messages.</p>
+<p>The SMTP server places received messages in the mail directory&#8217;s &#8216;new&#8217; folder.
+Those messages are normalized and transferred to the &#8216;cur&#8217; directory to
+be made available to the client.  This process occurs only once at the start of
+each client connection.  Messages received after that point will not be visible
+to the client until the next connection occurs.</p>
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.add_new_messages">
 <tt class="descname">add_new_messages</tt><big>(</big><em>message_id</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.add_new_messages" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Normalize and add a message to the mailbox</p>
+<p>POP3 requires that the statistics for file size reflect the number of
+octets that will be sent in response to a RETR command.  To take in to
+account the two octet CRLF at the end of each line, we process each newly
+submitted message such that the lines are properly terminated for retreival.</p>
+<p>Also, any lines in the message that begin with a &#8216;.&#8217; have it removed before
+storage.  This is per the RFC specifying the message syntax.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.collect_incoming_data">
 <tt class="descname">collect_incoming_data</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.collect_incoming_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Marshal data chunks into buffer</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.found_terminator">
 <tt class="descname">found_terminator</tt><big>(</big><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.found_terminator" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Process client command</p>
+<p>All client commands are contained in a single line and some
+include arguments after the command.  Here we dispatch the commands
+and arguments to the appropriate handlers.  Unrecognized commands
+generate an error response.</p>
+<p>The QUIT command causes this handler to close after issuing the
+response to the client.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.getScanListing">
 <tt class="descname">getScanListing</tt><big>(</big><em>msg_num</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.getScanListing" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a message index and size for a single message</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.getUidlListing">
 <tt class="descname">getUidlListing</tt><big>(</big><em>msg_num</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.getUidlListing" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the index and unique identifier for an individual message</p>
+<p>The unique identifier returned here is simply the file name of the
+message in the mail directory.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handleCapa">
 <tt class="descname">handleCapa</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handleCapa" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a capabilities list to the client</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handleDele">
 <tt class="descname">handleDele</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handleDele" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Mark a message for deletion</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handleList">
 <tt class="descname">handleList</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handleList" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a listing of messages in the mailbox</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handleOK">
 <tt class="descname">handleOK</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handleOK" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a positive response to the client</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handleQuit">
 <tt class="descname">handleQuit</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handleQuit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Delete messages marked for such by this client</p>
+<p>The RFC states that deletion of messages occurs only at the controlled
+termination of a client session.  The messages marked for deletion by
+the client are removed from the mail directory here before the response
+is issued to the client.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handleRetr">
 <tt class="descname">handleRetr</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handleRetr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the contents of a message</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handleRset">
 <tt class="descname">handleRset</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handleRset" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Unmarks messages tagged for deletion</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handleStat">
 <tt class="descname">handleStat</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handleStat" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return mailbox statistics to client</p>
+<p>Returns the number of messages and a total messages sizes in octets</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handleUidl">
 <tt class="descname">handleUidl</tt><big>(</big><em>cmd</em>, <em>args</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handleUidl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a UIDL listing for a single message or for all messages</p>
+<p>Returns UIDL for a single message if a message index argument is submitted
+by the client.  Otherwise returns a list of all message UIDLs for the
+mailbox.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.handle_close">
 <tt class="descname">handle_close</tt><big>(</big><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.handle_close" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Perform cleanup before closing this handler.</p>
+<p>This method is called when the handler is closing for any
+reason.  The single handler lock is released here to ensure
+that it is available to the next client connection.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="baremail_pop3.pop3_handler.push">
 <tt class="descname">push</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_handler.push" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Overrides base class for convenience</p>
+<p>Every response to client ends in CRLF.  Adding it here
+ensures consistency.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -146,10 +204,12 @@
 <dt id="baremail_pop3.pop3_server">
 <em class="property">class </em><tt class="descclassname">baremail_pop3.</tt><tt class="descname">pop3_server</tt><big>(</big><em>host</em>, <em>port</em>, <em>mb</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_server" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">asyncore.dispatcher</span></tt></p>
+<p>Listens on POP3 port and launch pop3 handler on connection.</p>
 <dl class="method">
 <dt id="baremail_pop3.pop3_server.handle_accept">
 <tt class="descname">handle_accept</tt><big>(</big><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_server.handle_accept" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Creates handler for each POP3 connection.</p>
+</dd></dl>
 
 </dd></dl>
 

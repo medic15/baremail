@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 """A pure Python email server
 
-BareMail provides rudimentary servers for SMTP and POP3 to serve as
+BareMail provides servers for SMTP and POP3 to serve as
 a simple mail system for local email messages.  It is intended primarily
-to service daemon processes that report event via email messages.  Daemon
-SMTP setup is greatly simplified since BareMail is extremely promiscious,
+to service daemon processes that report events via email messages.  Daemon
+SMTP setup is greatly simplified since BareMail is extremely promiscuous,
 accepting any user name and password as valid.
 
-WARNING: BareMail provides **NO SECURITY** whatsoever.  The SMTP and POP3 ports
-should never be opened on an interface attached to any untrusted network.
+.. warning::
+   BareMail provides **NO SECURITY** whatsoever.  The SMTP and POP3 ports
+   should never be opened on an interface attached to any untrusted network.
 """
-
 
 import asyncore
 import json
@@ -24,7 +24,15 @@ from baremail_smtp import smtp_server
 
 
 def run_server(configuration_file):
-    """Configure and run the email servers
+    """Configure and run the email servers.
+
+    Reads configuration from a JSON file and initializes the servers and
+    logging classes.  Logging configuration is included in the configuration
+    file as a JSON object.  When loaded, this yields a dictionary suitable
+    for use with dictConfig().
+
+    :param configuration_file: string path to JSON configuration file
+    :rtype: integer 0 for keyboard interrupt or 1 for failure at startup
     """
     print('Config file {}'.format(configuration_file))
     try:

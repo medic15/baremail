@@ -57,17 +57,34 @@
   <div class="section" id="module-baremail">
 <span id="baremail-module"></span><h1>baremail module<a class="headerlink" href="#module-baremail" title="Permalink to this headline">¶</a></h1>
 <p>A pure Python email server</p>
-<p>BareMail provides rudimentary servers for SMTP and POP3 to serve as
+<p>BareMail provides servers for SMTP and POP3 to serve as
 a simple mail system for local email messages.  It is intended primarily
-to service daemon processes that report event via email messages.  Daemon
-SMTP setup is greatly simplified since BareMail is extremely promiscious,
+to service daemon processes that report events via email messages.  Daemon
+SMTP setup is greatly simplified since BareMail is extremely promiscuous,
 accepting any user name and password as valid.</p>
-<p>WARNING: BareMail provides <strong>NO SECURITY</strong> whatsoever.  The SMTP and POP3 ports
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">BareMail provides <strong>NO SECURITY</strong> whatsoever.  The SMTP and POP3 ports
 should never be opened on an interface attached to any untrusted network.</p>
+</div>
 <dl class="function">
 <dt id="baremail.run_server">
 <tt class="descclassname">baremail.</tt><tt class="descname">run_server</tt><big>(</big><em>configuration_file</em><big>)</big><a class="headerlink" href="#baremail.run_server" title="Permalink to this definition">¶</a></dt>
-<dd><p>Configure and run the email servers</p>
+<dd><p>Configure and run the email servers.</p>
+<p>Reads configuration from a JSON file and initializes the servers and
+logging classes.  Logging configuration is included in the configuration
+file as a JSON object.  When loaded, this yields a dictionary suitable
+for use with dictConfig().</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>configuration_file</strong> &#8211; string path to JSON configuration file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">integer 0 for keyboard interrupt or 1 for failure at startup</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
