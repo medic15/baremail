@@ -83,8 +83,9 @@ to the client until the next connection occurs.</p>
 octets that will be sent in response to a RETR command.  To take in to
 account the two octet CRLF at the end of each line, we process each newly
 submitted message such that the lines are properly terminated for retreival.</p>
-<p>Also, any lines in the message that begin with a &#8216;.&#8217; have it removed before
-storage.  This is per the RFC specifying the message syntax.</p>
+<p>Also, any lines in the message that begin with a &#8216;.&#8217; are byte stuffed
+to avoid being mistaken for the message terminator.  This is per the
+RFC specifying the message syntax.</p>
 </dd></dl>
 
 <dl class="method">

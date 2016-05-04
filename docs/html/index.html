@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to BareMail’s documentation! &mdash; BareMail 0.1 documentation</title>
+    <title>BareMail &mdash; BareMail 0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -48,9 +48,89 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="welcome-to-baremail-s-documentation">
-<h1>Welcome to BareMail&#8217;s documentation!<a class="headerlink" href="#welcome-to-baremail-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>Contents:</p>
+  <div class="section" id="baremail">
+<h1>BareMail<a class="headerlink" href="#baremail" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="a-pure-python-email-service">
+<h1>A Pure Python Email Service<a class="headerlink" href="#a-pure-python-email-service" title="Permalink to this headline">¶</a></h1>
+<p>BareMail implements rudimentary email servers for the POP3 and SMTP protocols.
+It can run from its source directory without modification or configuration.
+The source is pure Python and no external libraries or modules are required.</p>
+</div>
+<div class="section" id="rationale">
+<h1>Rationale<a class="headerlink" href="#rationale" title="Permalink to this headline">¶</a></h1>
+<p>I use serveral daemon services on different machines around my home office.  Most of these
+services have a capability to send notifications via email.  There are several factors that
+combine to prevent me from making use of those features:</p>
+<ul class="simple">
+<li>The daemon doesn&#8217;t support the security features required by my email provider.</li>
+<li>Email is the last item to be configured and, by the time I&#8217;ve gotten to that point, I&#8217;ve
+run out of time to configure and test.</li>
+<li>I&#8217;m hesitant to put my email credentials in a plain text file.</li>
+<li>I live near the beach.</li>
+</ul>
+<p>Since email is the one thing I check throughout the day, that seems a waste.  As things are, I
+find out a service is down when I go to use it and it&#8217;s not there.  This is especially problematic
+when that service happens to be my back up system.</p>
+<p>BareMail solves this problem by requiring no little or no setup itself and by allowing
+the daemon&#8217;s email parameters to be very forgiving.  It accomplishes this by throwing away any
+and all sense of security and doing away with individual accounts.  The name BareMail
+comes from being &#8220;naked&#8221; to the world in terms of security and from being the bare minimum
+of functionality to accomplish the task.</p>
+<p>On either the POP3 or SMTP interface, BareMail will accept <strong>any</strong> user name and password.  As
+a matter of fact, it will quite happily render service with no login at all.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">BareMail provides <strong>NO SECURITY</strong> whatsoever.  The SMTP and POP3 ports
+should never be opened on an interface attached to any untrusted network.
+It is intended to run behind a firewall and serve either a single machine on
+the <tt class="docutils literal"><span class="pre">localhost</span></tt> interface or be exposed to a LAN shared only by trusted users.</p>
+</div>
+</div>
+<div class="section" id="warning">
+<h1>Warning<a class="headerlink" href="#warning" title="Permalink to this headline">¶</a></h1>
+<p>BareMail offers <strong>no security</strong> whatsoever.</p>
+</div>
+<div class="section" id="what-it-does">
+<h1>What It Does<a class="headerlink" href="#what-it-does" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>Accept email submissions on the SMTP port</li>
+<li>Store email in a maildir folder</li>
+<li>Serve those emails out the POP3 port</li>
+</ul>
+</div>
+<div class="section" id="what-it-doesn-t">
+<h1>What It Doesn&#8217;t<a class="headerlink" href="#what-it-doesn-t" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>Provide individual email accounts</li>
+<li>Have any security features.  Anyone can submit or retreive email.</li>
+<li>Perform more than minimal checking to verify the structure of the submitted emails.</li>
+</ul>
+</div>
+<div class="section" id="lesser-warnings">
+<h1>Lesser Warnings<a class="headerlink" href="#lesser-warnings" title="Permalink to this headline">¶</a></h1>
+<p>I&#8217;m an embedded systems engineer not a Pythonista.  You won&#8217;t find any list comprehension or
+decorators within.</p>
+<p>This is alpha code.  There are a ton of todo items to be done.  I&#8217;ll be tackling those as time allows.</p>
+</div>
+<div class="section" id="running">
+<h1>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h1>
+<p>Clone the repo.  CD to the src directory and run:
+python baremail.py ../baremail_cfg.json</p>
+<p>You can modify the JSON file to set the location of the mail directory, the host interface, and
+port numbers.  At this time, BareMail runs in the foreground attached to a terminal.  Proper
+daemonification is high on the todo list.</p>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+<div class="section" id="source-documentation">
+<h1>Source Documentation<a class="headerlink" href="#source-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">src</a><ul>
@@ -62,14 +142,6 @@
 </ul>
 </div>
 </div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
-<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
-<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
-</ul>
-</div>
 
 
           </div>
@@ -79,8 +151,16 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to BareMail&#8217;s documentation!</a></li>
+<li><a class="reference internal" href="#">BareMail</a></li>
+<li><a class="reference internal" href="#a-pure-python-email-service">A Pure Python Email Service</a></li>
+<li><a class="reference internal" href="#rationale">Rationale</a></li>
+<li><a class="reference internal" href="#warning">Warning</a></li>
+<li><a class="reference internal" href="#what-it-does">What It Does</a></li>
+<li><a class="reference internal" href="#what-it-doesn-t">What It Doesn&#8217;t</a></li>
+<li><a class="reference internal" href="#lesser-warnings">Lesser Warnings</a></li>
+<li><a class="reference internal" href="#running">Running</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#source-documentation">Source Documentation</a></li>
 </ul>
 
   <h4>Next topic</h4>
