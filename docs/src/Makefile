@@ -51,8 +51,8 @@ rst:
 
 install:
 	rm -rf ../html
-	mv _build/html ..
-
+	cp -R _build/html ..
+	rm -rf ../html/_sources
 clean:
 	rm -rf $(BUILDDIR)/*
 
