@@ -8,25 +8,26 @@ BareMail
 
 A Pure Python Email Service
 ===========================
-BareMail implements rudimentary email servers for the POP3 and SMTP protocols.
+BareMail implements functional email servers for the POP3 and SMTP protocols.
+Using a minimum of system resources it provides the function of a mail submission
+agent, mail transfer agent, and mail delivery agent for a local system.
 It can run from its source directory without modification or configuration.
 The source is pure Python and no external libraries or modules are required.
 
 Rationale
 =========
-I use serveral daemon services on different machines around my home office.  Most of these
-services have a capability to send notifications via email.  There are several factors that
-combine to prevent me from making use of those features:
+Many long running services and daemons present on desktop and server machines use email to
+notify the administrator of critical events.  The majority of desktop users and casual system
+administrators don't take advantage of this capability to monitor the health of the systems
+under their control.  Either the mail messages are discarded silently or they sit collecting
+virtual dust in the local mail spool.  Here, listed in no particular order, are some of the
+reasons for this state of affairs:
 
-* The daemon doesn't support the security features required by my email provider.
-* Email is the last item to be configured and, by the time I've gotten to that point, I've
-  run out of time to configure and test.
-* I'm hesitant to put my email credentials in a plain text file.
-* I live near the beach.
-
-Since email is the one thing I check throughout the day, that seems a waste.  As things are, I
-find out a service is down when I go to use it and it's not there.  This is especially problematic
-when that service happens to be my back up system.
+* Getting sendmail (or its functional equivalent) working is non-trivial.
+* The daemon doesn't support the security features required to directly submit email to the server.
+* The daemon doesn't support any other port that the standard SMTP port 25.
+* There are concerns about having email credentials stored in plain text for each daemon's configuration file.
+* There are no easy ways to get most email clients to look in a local mail spool.
 
 BareMail solves this problem by requiring no little or no setup itself and by allowing
 the daemon's email parameters to be very forgiving.  It accomplishes this by throwing away any
@@ -43,15 +44,11 @@ a matter of fact, it will quite happily render service with no login at all.
    It is intended to run behind a firewall and serve either a single machine on
    the ``localhost`` interface or be exposed to a LAN shared only by trusted users.
 
-Warning
-=======
-BareMail offers **no security** whatsoever.  
-
 What It Does
 ============
-* Accept email submissions on the SMTP port
-* Store email in a maildir folder
-* Serve those emails out the POP3 port
+* Accepts email submissions on the SMTP port
+* Stores email in a maildir folder
+* Serves those emails to POP3 clients
 
 What It Doesn't
 ===============
@@ -61,10 +58,13 @@ What It Doesn't
 
 Lesser Warnings
 ===============
-I'm an embedded systems engineer not a Pythonista.  You won't find any list comprehension or
+The developer is an embedded systems engineer not a Pythonista.  You won't find any list comprehension or
 decorators within.
 
-This is alpha code.  There are a ton of todo items to be done.  I'll be tackling those as time allows.
+This is alpha code.  There is a great deal of todo to be done.
+
+This code is tested and run on an Ubuntu base system using the Thunderbird client.  A broader
+test base is needed.
 
 Running
 =======

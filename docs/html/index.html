@@ -53,25 +53,27 @@
 </div>
 <div class="section" id="a-pure-python-email-service">
 <h1>A Pure Python Email Service<a class="headerlink" href="#a-pure-python-email-service" title="Permalink to this headline">¶</a></h1>
-<p>BareMail implements rudimentary email servers for the POP3 and SMTP protocols.
+<p>BareMail implements functional email servers for the POP3 and SMTP protocols.
+Using a minimum of system resources it provides the function of a mail submission
+agent, mail transfer agent, and mail delivery agent for a local system.
 It can run from its source directory without modification or configuration.
 The source is pure Python and no external libraries or modules are required.</p>
 </div>
 <div class="section" id="rationale">
 <h1>Rationale<a class="headerlink" href="#rationale" title="Permalink to this headline">¶</a></h1>
-<p>I use serveral daemon services on different machines around my home office.  Most of these
-services have a capability to send notifications via email.  There are several factors that
-combine to prevent me from making use of those features:</p>
+<p>Many long running services and daemons present on desktop and server machines use email to
+notify the administrator of critical events.  The majority of desktop users and casual system
+administrators don&#8217;t take advantage of this capability to monitor the health of the systems
+under their control.  Either the mail messages are discarded silently or they sit collecting
+virtual dust in the local mail spool.  Here, listed in no particular order, are some of the
+reasons for this state of affairs:</p>
 <ul class="simple">
-<li>The daemon doesn&#8217;t support the security features required by my email provider.</li>
-<li>Email is the last item to be configured and, by the time I&#8217;ve gotten to that point, I&#8217;ve
-run out of time to configure and test.</li>
-<li>I&#8217;m hesitant to put my email credentials in a plain text file.</li>
-<li>I live near the beach.</li>
+<li>Getting sendmail (or its functional equivalent) working is non-trivial.</li>
+<li>The daemon doesn&#8217;t support the security features required to directly submit email to the server.</li>
+<li>The daemon doesn&#8217;t support any other port that the standard SMTP port 25.</li>
+<li>There are concerns about having email credentials stored in plain text for each daemon&#8217;s configuration file.</li>
+<li>There are no easy ways to get most email clients to look in a local mail spool.</li>
 </ul>
-<p>Since email is the one thing I check throughout the day, that seems a waste.  As things are, I
-find out a service is down when I go to use it and it&#8217;s not there.  This is especially problematic
-when that service happens to be my back up system.</p>
 <p>BareMail solves this problem by requiring no little or no setup itself and by allowing
 the daemon&#8217;s email parameters to be very forgiving.  It accomplishes this by throwing away any
 and all sense of security and doing away with individual accounts.  The name BareMail
@@ -87,16 +89,12 @@ It is intended to run behind a firewall and serve either a single machine on
 the <tt class="docutils literal"><span class="pre">localhost</span></tt> interface or be exposed to a LAN shared only by trusted users.</p>
 </div>
 </div>
-<div class="section" id="warning">
-<h1>Warning<a class="headerlink" href="#warning" title="Permalink to this headline">¶</a></h1>
-<p>BareMail offers <strong>no security</strong> whatsoever.</p>
-</div>
 <div class="section" id="what-it-does">
 <h1>What It Does<a class="headerlink" href="#what-it-does" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li>Accept email submissions on the SMTP port</li>
-<li>Store email in a maildir folder</li>
-<li>Serve those emails out the POP3 port</li>
+<li>Accepts email submissions on the SMTP port</li>
+<li>Stores email in a maildir folder</li>
+<li>Serves those emails to POP3 clients</li>
 </ul>
 </div>
 <div class="section" id="what-it-doesn-t">
@@ -109,9 +107,11 @@ the <tt class="docutils literal"><span class="pre">localhost</span></tt> interfa
 </div>
 <div class="section" id="lesser-warnings">
 <h1>Lesser Warnings<a class="headerlink" href="#lesser-warnings" title="Permalink to this headline">¶</a></h1>
-<p>I&#8217;m an embedded systems engineer not a Pythonista.  You won&#8217;t find any list comprehension or
+<p>The developer is an embedded systems engineer not a Pythonista.  You won&#8217;t find any list comprehension or
 decorators within.</p>
-<p>This is alpha code.  There are a ton of todo items to be done.  I&#8217;ll be tackling those as time allows.</p>
+<p>This is alpha code.  There is a great deal of todo to be done.</p>
+<p>This code is tested and run on an Ubuntu base system using the Thunderbird client.  A broader
+test base is needed.</p>
 </div>
 <div class="section" id="running">
 <h1>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h1>
@@ -154,7 +154,6 @@ daemonification is high on the todo list.</p>
 <li><a class="reference internal" href="#">BareMail</a></li>
 <li><a class="reference internal" href="#a-pure-python-email-service">A Pure Python Email Service</a></li>
 <li><a class="reference internal" href="#rationale">Rationale</a></li>
-<li><a class="reference internal" href="#warning">Warning</a></li>
 <li><a class="reference internal" href="#what-it-does">What It Does</a></li>
 <li><a class="reference internal" href="#what-it-doesn-t">What It Doesn&#8217;t</a></li>
 <li><a class="reference internal" href="#lesser-warnings">Lesser Warnings</a></li>
