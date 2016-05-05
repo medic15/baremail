@@ -22,6 +22,8 @@ import sys
 from baremail_pop3 import pop3_server
 from baremail_smtp import smtp_server
 
+def check_root_and_user(user):
+    pass
 
 def run_server(configuration_file):
     """Configure and run the email servers.
@@ -34,12 +36,9 @@ def run_server(configuration_file):
     :param configuration_file: string path to JSON configuration file
     :rtype: integer 0 for keyboard interrupt or 1 for failure at startup
     """
-    print('Config file {}'.format(configuration_file))
     try:
         cfile = open(configuration_file, 'r')
         cfgdict = json.load(cfile)
-        print('daemon config - {}'.format(cfgdict['daemon']))
-        print('network config - {}'.format(cfgdict['network']))
     except Exception, msg:
         print('Configuration file error - {}'.format(msg))
         return 1
@@ -53,14 +52,14 @@ def run_server(configuration_file):
         return 1
 
     try:
-        log.info('Mailbox directory {}'.format(cfgdict['daemon']['maildir']))
-        mb = mailbox.Maildir(cfgdict['daemon']['maildir'], factory=None, create=True)
-        p_server = pop3_server(cfgdict['network']['pop3_host'],
-                               cfgdict['network']['pop3_port'],
-                               mb)
-        p_server = smtp_server(cfgdict['network']['smtp_host'],
-                               cfgdict['network']['smtp_port'],
-                               mb)
+        mb = mailbox.Maildir(cfgdict['global']['maildir'], factory=None, create=True)
+        server_list = []
+        pop3_host = cfgdict['network']['POP3']['host']
+        pop3_port = cfgdict['network']['POP3']['port']
+        server_list.append(pop3_server(pop3_host, pop3_port, mb))
+        for server in cfgdict['network']['SMTP']:
+            server_list.append(smtp_server(server['host'], server['port'], mb))
+        log.info('Mailbox directory {}'.format(cfgdict['global']['maildir']))
         asyncore.loop()
     except KeyboardInterrupt:
         log.info('cleaning up')
