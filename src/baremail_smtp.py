@@ -149,10 +149,9 @@ class smtp_handler(asynchat.async_chat):
 class smtp_server(asyncore.dispatcher):
     """Listens on SMTP port and launch SMTP handler on connection.
     """
-    def __init__(self, host, port, mb):
+    def __init__(self, host, port):
         log.info('Serving SMTP on {}:{}'.format(host, port))
         asyncore.dispatcher.__init__(self)
-        self.mbx = mb
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
         self.bind((host, port))
@@ -167,4 +166,10 @@ class smtp_server(asyncore.dispatcher):
             log.info('Incoming SMTP connection from %s' % repr(addr))
             handler = smtp_handler(sock, self.mbx)
 
+    def set_mailbox(self, mb):
+        """Attach mailbox to this server.
+
+        Must be set before asyncore.loop() is called.
+        """
+        self.mbx = mb
 
