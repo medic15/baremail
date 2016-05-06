@@ -51,17 +51,27 @@ def run_server(configuration_file):
         print('Server logging initialization error - {}'.format(msg))
         return 1
 
+    # grab login name here before switch to daemon mode
+    login_name = os.getlogin()
+
     # daemonize if specified
     if cfgdict['global']['daemon']:
         try:
+            log.info('daemonizing')
             createDaemon()
+            try: #reconfigure logging since daemon process closed all outputs
+                logging.config.dictConfig(cfgdict['logger_config'])
+                log = logging.getLogger('baremail')
+            except Exception, msg:
+                return 1
+            log.info('daemonizing complete')
         except Exception, msg:
             log.error('Unable to detach to daemon - {}'.format(msg))
             return 1
 
         try:
-            fp = open(cfgdict['global']['PID_file'])
-            fp.writeline('{}\n'.format(os.getpid()))
+            fp = open(cfgdict['global']['PID_file'], 'a')
+            fp.write('{}\n'.format(os.getpid()))
             fp.close()
         except Exception, msg:
             log.error('Unable to open PID file - {}'.format(msg))
@@ -79,7 +89,9 @@ def run_server(configuration_file):
 
     # Can only setuid if currently running as root
     if os.getuid() == 0:
+        log.info('Running as root, trying setuid')
         if cfgdict['global']['user']: # a user was specified
+            log.info('setuid from config {}'.format(cfgdict['global']['user']))
             # try to get the uid
             try:
                 pwd_struct = pwd.getpwnam(cfgdict['global']['user'])
@@ -98,11 +110,15 @@ def run_server(configuration_file):
                     log.error('Could not set effective user id: %s' % e)
                     return 1
         else: # no user specified, try to drop back to original user
+            log.info('setuid back to login user')
             try:
-                pwd_struct = pwd.getpwnam(os.getlogin())
+                log.info('login user was {}'.format(login_name))
+                pwd_struct = pwd.getpwnam(login_name)
             except KeyError, e:
                 log.error('Unable to determin user - {}'.format(e))
                 return 1
+            except Exception, e:
+                log.exception('Other error when determing user - {}'.format(e))
             if pwd_struct[2] != 0: # we're already root
                 try: # Try setting the new gid
                     os.setgid(pwd_struct[3])
@@ -114,6 +130,8 @@ def run_server(configuration_file):
                 except OSError, e:
                     log.error('Could not set effective user id: %s' % e)
                     return 1
+            else:
+                log.info('login was root user!')
         log.info('Running as user {}'.format(pwd_struct[0]))
 
     # Mailbox creation is alway performed as an unprivileged user.  User must have
@@ -131,6 +149,8 @@ def run_server(configuration_file):
         asyncore.loop()
     except KeyboardInterrupt:
         log.info('cleaning up')
+    log.info('BareMail exiting')
+
 
 if __name__ == '__main__':
     try:
