@@ -69,6 +69,8 @@ class pop3_handler(asynchat.async_chat):
             log.error('S: -ERR Error reading mailbox')
             self.push('-ERR Error reading mailbox')
             self.close_when_done()
+        except Exception, msg:
+            log.exception('Unknown mailbox access error - {}'.format(msg))
 
     def collect_incoming_data(self, data):
         """Marshal data chunks into buffer
@@ -142,7 +144,7 @@ class pop3_handler(asynchat.async_chat):
             try:
                 self.mbx.discard(id)
             except Exception, exmsg:
-                log.error('Quit error - {}'.format(exmsg))
+                log.exception('Quit error - {}'.format(exmsg))
 
         return '+OK POP3 server signing off'
 
@@ -162,7 +164,7 @@ class pop3_handler(asynchat.async_chat):
                 except mailbox.Error:
                     pass
         except Exception, exmsg:
-            log.error('Unhandled exception {}'.format(exmsg))
+            log.exception('Unhandled exception {}'.format(exmsg))
             return '-ERR Internal Error'
         else:
             return '+OK {} {}'.format(num_msgs, mb_size)
@@ -179,7 +181,7 @@ class pop3_handler(asynchat.async_chat):
             try:
                 msg_num = int(args.split()[0])
                 ret_msg = '+OK {}'.format(self.getScanListing(msg_num))
-            except:
+            except Exception:
                 ret_msg = '-ERR invalid index {}'.format(args)
         else:
             try:
@@ -189,7 +191,7 @@ class pop3_handler(asynchat.async_chat):
                 ret_msg_array.append('.')
                 ret_msg = CRLF.join(ret_msg_array)
             except Exception, exmsg:
-                log.error('handleList error - {}'.format(exmsg))
+                log.exception('handleList error - {}'.format(exmsg))
                 ret_msg = '-ERR Interal server error'
         return ret_msg
 
@@ -200,7 +202,7 @@ class pop3_handler(asynchat.async_chat):
             msg_num = int(args.split()[0])
             msg_string = self.mbx.get_string(self.msg_index[msg_num])
         except Exception, exmsg:
-            log.error('handleRetr error - {}'.format(exmsg))
+            log.exception('handleRetr error - {}'.format(exmsg))
             ret_msg = '-ERR invalid index {}'.format(msg_num)
         else:
             ret_msg_array = ['+OK {} octets'.format(len(msg_string))]
@@ -216,7 +218,7 @@ class pop3_handler(asynchat.async_chat):
             msg_num = int(args.split()[0])
             msg_key = self.msg_index[msg_num]
         except Exception, exmsg:
-            log.error('handleDele error - {}'.format(exmsg))
+            log.exception('handleDele error - {}'.format(exmsg))
             ret_msg = '-ERR invalid index {}'.format(msg_num)
         else:
             self.delete_list.append(msg_key)
@@ -263,7 +265,7 @@ class pop3_handler(asynchat.async_chat):
                 ret_msg_array.append('.')
                 ret_msg = CRLF.join(ret_msg_array)
             except Exception, exmsg:
-                log.error('handleList error - {}'.format(exmsg))
+                log.exception('handleList error - {}'.format(exmsg))
                 ret_msg = '-ERR Interal server error'
         return ret_msg
 
@@ -326,4 +328,5 @@ class pop3_server(asyncore.dispatcher):
         Must be set before asyncore.loop() is called.
         """
         self.mbx = mb
+        log.info('pop3 mailbox set')
 

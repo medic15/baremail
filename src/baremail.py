@@ -66,15 +66,15 @@ def run_server(configuration_file):
                 return 1
             log.info('daemonizing complete')
         except Exception, msg:
-            log.error('Unable to detach to daemon - {}'.format(msg))
+            log.exception('Unable to detach to daemon - {}'.format(msg))
             return 1
 
         try:
-            fp = open(cfgdict['global']['PID_file'], 'a')
+            fp = open(cfgdict['global']['PID_file'], 'w')
             fp.write('{}\n'.format(os.getpid()))
             fp.close()
         except Exception, msg:
-            log.error('Unable to open PID file - {}'.format(msg))
+            log.exception('Unable to open PID file - {}'.format(msg))
             return 1
 
     try: #initialize servers
@@ -84,7 +84,7 @@ def run_server(configuration_file):
         for server in cfgdict['network']['SMTP']:
             server_list.append(smtp_server(server['host'], server['port']))
     except Exception, msg:
-        log.error('Server initialization error - {}'.format(msg))
+        log.exception('Server initialization error - {}'.format(msg))
         return 1
 
     # Can only setuid if currently running as root
@@ -137,18 +137,22 @@ def run_server(configuration_file):
     # Mailbox creation is alway performed as an unprivileged user.  User must have
     # permissions sufficient to create the mailbox in the given directory.
     try: # create/open mailbox and add it to the servers
-        log.info('Mailbox directory {}'.format(cfgdict['global']['maildir']))
         mb = mailbox.Maildir(cfgdict['global']['maildir'], factory=None, create=True)
+        log.info('Mailbox directory {}'.format(cfgdict['global']['maildir']))
         for server in server_list:
             server.set_mailbox(mb)
     except Exception, msg:
-        log.error('Mailbox creation error - {}'.format(msg))
+        log.exception('Mailbox creation error - {}'.format(msg))
         
 
     try: # start processing
         asyncore.loop()
     except KeyboardInterrupt:
         log.info('cleaning up')
+    except Exception, msg:
+        log.exception('Uncaught exception {}'.format(msg))
+    for server in server_list:
+        server.close()
     log.info('BareMail exiting')
 
 
