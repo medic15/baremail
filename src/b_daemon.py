@@ -11,10 +11,6 @@ http://code.activestate.com/recipes/278731-creating-a-daemon-the-python-way/
 # Standard Python modules.
 import os               # Miscellaneous OS interfaces.
 import sys              # System-specific parameters and functions.
-import logging
-
-# create logger
-log = logging.getLogger('baremail.b_daemon')
 
 # Default maximum for the number of available file descriptors.
 MAXFD = 1024

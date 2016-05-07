@@ -2,7 +2,7 @@
   "global": {
     "PID_file": "BareMail.pid",
     "daemon": true,
-    "maildir": "MailboxDir",
+    "maildir": "/tmp/MailboxDir",
     "user": null,
     "working_dir": null
   },

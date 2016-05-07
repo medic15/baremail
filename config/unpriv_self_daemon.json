@@ -1,7 +1,7 @@
 {
   "global": {
     "PID_file": "BareMail.pid",
-    "daemon": false,
+    "daemon": true,
     "maildir": "/tmp/MailboxDir",
     "user": null,
     "working_dir": null
@@ -35,7 +35,7 @@
       },
       "error_file_handler": {
         "class": "logging.handlers.RotatingFileHandler",
-        "level": "ERROR",
+        "level": "INFO",
         "formatter": "simple",
         "filename": "baremail.log",
         "maxBytes": 10485760,

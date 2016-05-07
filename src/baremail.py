@@ -16,7 +16,7 @@ import asyncore
 import json
 import logging
 import logging.config
-import mailbox
+#import mailbox
 import pwd
 import os
 import sys
@@ -77,6 +77,10 @@ def run_server(configuration_file):
             log.exception('Unable to open PID file - {}'.format(msg))
             return 1
 
+    f = open('/tmp/loop.txt', 'w')
+    f.write('.\n')
+    f.flush()
+    log.info('testfile fd is {}'.format(f.fileno()))
     try: #initialize servers
         server_list = []
         server_list.append(pop3_server(cfgdict['network']['POP3']['host'],
@@ -137,20 +141,23 @@ def run_server(configuration_file):
     # Mailbox creation is alway performed as an unprivileged user.  User must have
     # permissions sufficient to create the mailbox in the given directory.
     try: # create/open mailbox and add it to the servers
-        mb = mailbox.Maildir(cfgdict['global']['maildir'], factory=None, create=True)
         log.info('Mailbox directory {}'.format(cfgdict['global']['maildir']))
         for server in server_list:
-            server.set_mailbox(mb)
+            server.set_mailbox(cfgdict['global']['maildir'])
     except Exception, msg:
         log.exception('Mailbox creation error - {}'.format(msg))
         
 
     try: # start processing
-        asyncore.loop()
+        while True:
+            f.write('.\n')
+            f.flush()
+            asyncore.loop(count=2)
     except KeyboardInterrupt:
         log.info('cleaning up')
     except Exception, msg:
         log.exception('Uncaught exception {}'.format(msg))
+    f.close()
     for server in server_list:
         server.close()
     log.info('BareMail exiting')

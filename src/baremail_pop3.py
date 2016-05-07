@@ -58,6 +58,7 @@ class pop3_handler(asynchat.async_chat):
             return
 
         try:
+            log.info('building index in __init__')
             for message_id, message in self.mbx.iteritems():
                 if message.get_subdir() == 'new':
                     self.add_new_messages(message_id)
@@ -172,6 +173,7 @@ class pop3_handler(asynchat.async_chat):
     def getScanListing(self, msg_num):
         """Return a message index and size for a single message
         """
+        # TODO: use mbx __len__ instead of getting string
         return '{} {}'.format(msg_num, len(self.mbx.get_string(self.msg_index[msg_num])))
 
     def handleList(self, cmd, args):
@@ -292,15 +294,18 @@ class pop3_handler(asynchat.async_chat):
         RFC specifying the message syntax.
         """
         norm_array = []
-        msg_array = self.mbx.get_string(message_id).splitlines()
-        for line in msg_array:
-            if line == '.':
-                line = '..'
-            norm_array.append(line)
-        msg_string = '\r\n'.join(norm_array)
-        new_message = mailbox.MaildirMessage(msg_string)
-        new_message.set_subdir('cur')
-        self.mbx[message_id] = new_message
+        try:
+            msg_array = self.mbx.get_string(message_id).splitlines()
+            for line in msg_array:
+                if line == '.':
+                    line = '..'
+                norm_array.append(line)
+            msg_string = '\r\n'.join(norm_array)
+            new_message = mailbox.MaildirMessage(msg_string)
+            new_message.set_subdir('cur')
+            self.mbx[message_id] = new_message
+        except Exception, e:
+            log.exception('mbx error - {}'.format(e))
 
 class pop3_server(asyncore.dispatcher):
     """Listens on POP3 port and launch pop3 handler on connection.
@@ -320,13 +325,20 @@ class pop3_server(asyncore.dispatcher):
         if pair is not None:
             sock, addr = pair
             log.info('Incoming POP3 connection from %s' % repr(addr))
-            handler = pop3_handler(sock, self.mbx)
+            try:
+                log.info('accessing mailbox')
+                mbx = mailbox.Maildir(self.mb_name, factory=None, create=True)
+            except Exception, e:
+                log.exception('mbx error - {}'.format(e))
+                return
+            log.info('creating handler')
+            handler = pop3_handler(sock, mbx)
 
     def set_mailbox(self, mb):
         """Attach mailbox to this server.
 
         Must be set before asyncore.loop() is called.
         """
-        self.mbx = mb
-        log.info('pop3 mailbox set')
+        self.mb_name = mb
+        log.info('pop3 mailbox set to {}'.format(mb))
 
