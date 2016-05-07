@@ -1,21 +1,17 @@
 {
   "global": {
-    "PID_file": "BareMail.pid",
-    "daemon": false,
     "maildir": "MailboxDir",
-    "user": null,
-    "working_dir": null
   },
   "network": {
     "SMTP": [{"host": "localhost",
-              "port": 5051
+              "port": 2025
              },
              {"host": "localhost",
-              "port": 5052
+              "port": 2587
              }
             ],
     "POP3": {"host": "localhost",
-             "port": 5050}
+             "port": 2110}
   },
   "logger_config": {
     "version": 1,
