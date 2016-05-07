@@ -22,9 +22,6 @@ import sys
 from baremail_pop3 import pop3_server
 from baremail_smtp import smtp_server
 
-# create logger
-log = logging.getLogger('baremail')
-
 def run_server(cfgdict=None):
     """Configure and run the email servers.
 
@@ -35,6 +32,17 @@ def run_server(cfgdict=None):
 
     :rtype: integer 0 for keyboard interrupt or 1 for failure at startup
     """
+    try: #configure logging
+        logging.config.dictConfig(cfgdict['logger_config'])
+        # create logger
+        log = logging.getLogger('baremail')
+    except Exception, msg:
+        print('Server logging initialization error - {}'.format(msg))
+        return 1
+
+    # grab login name here before switch to daemon mode
+    # login_name = os.getlogin()
+
     try:
         mb = mailbox.Maildir(cfgdict['global']['maildir'], factory=None, create=True)
         log.info('Mailbox directory {}'.format(cfgdict['global']['maildir']))
@@ -69,7 +77,7 @@ if __name__ == '__main__':
         cfile = open(cfile_name, 'r')
         cfgdict = json.load(cfile)
     except Exception, msg:
-        log.exception('Configuration file error - {}'.format(msg))
+        print('Configuration file error - {}'.format(msg))
     else:
         sys.exit(run_server(cfgdict))
 

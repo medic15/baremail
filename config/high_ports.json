@@ -1,13 +1,10 @@
 {
   "global": {
-    "maildir": "MailboxDir",
+    "maildir": "MailboxDir"
   },
   "network": {
     "SMTP": [{"host": "localhost",
               "port": 2025
-             },
-             {"host": "localhost",
-              "port": 2587
              }
             ],
     "POP3": {"host": "localhost",
