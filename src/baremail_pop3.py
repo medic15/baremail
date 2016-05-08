@@ -58,7 +58,6 @@ class pop3_handler(asynchat.async_chat):
             return
 
         try:
-            log.info('building index in __init__')
             for message_id, message in self.mbx.iteritems():
                 if message.get_subdir() == 'new':
                     self.add_new_messages(message_id)
@@ -325,20 +324,8 @@ class pop3_server(asyncore.dispatcher):
         if pair is not None:
             sock, addr = pair
             log.info('Incoming POP3 connection from %s' % repr(addr))
-            try:
-                log.info('accessing mailbox')
-                mbx = mailbox.Maildir(self.mb_name, factory=None, create=True)
-            except Exception, e:
-                log.exception('mbx error - {}'.format(e))
-                return
-            log.info('creating handler')
-            handler = pop3_handler(sock, mbx)
+            handler = pop3_handler(sock, self.mbx)
 
     def set_mailbox(self, mb):
-        """Attach mailbox to this server.
-
-        Must be set before asyncore.loop() is called.
-        """
-        self.mb_name = mb
-        log.info('pop3 mailbox set to {}'.format(mb))
+        self.mbx = mb
 

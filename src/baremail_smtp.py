@@ -120,6 +120,7 @@ class smtp_handler(asynchat.async_chat):
                 msg_id = self.mbx.add(msg)
                 ret_str = '250 Ok: queued as {}'.format(msg_id)
             except Exception, e:
+                ret_str = '451 could not save message {}'.format(msg_id)
                 log.exception('Error writing mailbox {}'.format(e))
                 msg_id = 'Error!!'
             self.data = []
@@ -169,14 +170,8 @@ class smtp_server(asyncore.dispatcher):
         if pair is not None:
             sock, addr = pair
             log.info('Incoming SMTP connection from %s' % repr(addr))
-            mbx = mailbox.Maildir(self.mb_name, factory=None, create=True)
-            handler = smtp_handler(sock, mbx)
+            handler = smtp_handler(sock, self.mbx)
 
     def set_mailbox(self, mb):
-        """Attach mailbox to this server.
-
-        Must be set before asyncore.loop() is called.
-        """
-        self.mb_name = mb
-        log.info('smtp mailbox set to {}'.format(mb))
+        self.mbx = mb
 

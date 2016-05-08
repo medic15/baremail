@@ -16,16 +16,15 @@ import asyncore
 import json
 import logging
 import logging.config
-#import mailbox
-import pwd
+import mailbox
 import os
+import pwd
 import sys
 
 from baremail_pop3 import pop3_server
 from baremail_smtp import smtp_server
-from b_daemon import createDaemon
 
-def run_server(configuration_file):
+def run_server(cfgdict=None):
     """Configure and run the email servers.
 
     Reads configuration from a JSON file and initializes the servers and
@@ -33,16 +32,8 @@ def run_server(configuration_file):
     file as a JSON object.  When loaded, this yields a dictionary suitable
     for use with dictConfig().
 
-    :param configuration_file: string path to JSON configuration file
     :rtype: integer 0 for keyboard interrupt or 1 for failure at startup
     """
-    try: #process configuration file
-        cfile = open(configuration_file, 'r')
-        cfgdict = json.load(cfile)
-    except Exception, msg:
-        print('Configuration file error - {}'.format(msg))
-        return 1
-
     try: #configure logging
         logging.config.dictConfig(cfgdict['logger_config'])
         # create logger
@@ -51,117 +42,41 @@ def run_server(configuration_file):
         print('Server logging initialization error - {}'.format(msg))
         return 1
 
-    # grab login name here before switch to daemon mode
-    login_name = os.getlogin()
-
-    # daemonize if specified
-    if cfgdict['global']['daemon']:
-        try:
-            log.info('daemonizing')
-            createDaemon()
-            try: #reconfigure logging since daemon process closed all outputs
-                logging.config.dictConfig(cfgdict['logger_config'])
-                log = logging.getLogger('baremail')
-            except Exception, msg:
-                return 1
-            log.info('daemonizing complete')
-        except Exception, msg:
-            log.exception('Unable to detach to daemon - {}'.format(msg))
-            return 1
-
-        try:
-            fp = open(cfgdict['global']['PID_file'], 'w')
-            fp.write('{}\n'.format(os.getpid()))
-            fp.close()
-        except Exception, msg:
-            log.exception('Unable to open PID file - {}'.format(msg))
-            return 1
-
-    f = open('/tmp/loop.txt', 'w')
-    f.write('.\n')
-    f.flush()
-    log.info('testfile fd is {}'.format(f.fileno()))
-    try: #initialize servers
+    try: # instantiate servers
         server_list = []
         server_list.append(pop3_server(cfgdict['network']['POP3']['host'],
                                        cfgdict['network']['POP3']['port']))
         for server in cfgdict['network']['SMTP']:
             server_list.append(smtp_server(server['host'], server['port']))
     except Exception, msg:
-        log.exception('Server initialization error - {}'.format(msg))
-        return 1
+        log.exception('server initialization error - {}'.format(msg))
 
-    # Can only setuid if currently running as root
-    if os.getuid() == 0:
-        log.info('Running as root, trying setuid')
-        if cfgdict['global']['user']: # a user was specified
-            log.info('setuid from config {}'.format(cfgdict['global']['user']))
-            # try to get the uid
-            try:
-                pwd_struct = pwd.getpwnam(cfgdict['global']['user'])
-            except KeyError, e:
-                log.error('No such user {} - {}'.format(cfgdict['global']['user'], e))
-                return 1
-            if pwd_struct[2] != 0: # we're already root
-                try: # Try setting the new gid
-                    os.setgid(pwd_struct[3])
-                except OSError, e:
-                    log.error('Could not set effective group id: %s' % e)
-                    return 1
-                try: # Try setting the new uid
-                    os.setuid(pwd_struct[2])
-                except OSError, e:
-                    log.error('Could not set effective user id: %s' % e)
-                    return 1
-        else: # no user specified, try to drop back to original user
-            log.info('setuid back to login user')
-            try:
-                log.info('login user was {}'.format(login_name))
-                pwd_struct = pwd.getpwnam(login_name)
-            except KeyError, e:
-                log.error('Unable to determin user - {}'.format(e))
-                return 1
-            except Exception, e:
-                log.exception('Other error when determing user - {}'.format(e))
-            if pwd_struct[2] != 0: # we're already root
-                try: # Try setting the new gid
-                    os.setgid(pwd_struct[3])
-                except OSError, e:
-                    log.error('Could not set effective group id: %s' % e)
-                    return 1
-                try: # Try setting the new uid
-                    os.setuid(pwd_struct[2])
-                except OSError, e:
-                    log.error('Could not set effective user id: %s' % e)
-                    return 1
-            else:
-                log.info('login was root user!')
-        log.info('Running as user {}'.format(pwd_struct[0]))
+    if os.getuid() == 0: # running as root, see if priv can be dropped
+        log.info('pid {}'.format(os.getpid()))
+        try:
+            login_name = os.getlogin()
+            pw_info = pwd.getpwnam(login_name)
+            os.setgid(pw_info[3])
+            os.setuid(pw_info[2])
+        except Exception, msg:
+            log.exception('Unable to set user - {}'.format(msg))
+            return 1
 
-    # Mailbox creation is alway performed as an unprivileged user.  User must have
-    # permissions sufficient to create the mailbox in the given directory.
-    try: # create/open mailbox and add it to the servers
+    try:
+        mb = mailbox.Maildir(cfgdict['global']['maildir'], factory=None, create=True)
         log.info('Mailbox directory {}'.format(cfgdict['global']['maildir']))
         for server in server_list:
-            server.set_mailbox(cfgdict['global']['maildir'])
+            server.set_mailbox(mb)
     except Exception, msg:
-        log.exception('Mailbox creation error - {}'.format(msg))
-        
-
-    try: # start processing
-        while True:
-            f.write('.\n')
-            f.flush()
-            asyncore.loop(count=2)
+        log.exception('mailbox initialization error - {}'.format(msg))
+    try:
+        asyncore.loop()
     except KeyboardInterrupt:
         log.info('cleaning up')
+        return 0
     except Exception, msg:
-        log.exception('Uncaught exception {}'.format(msg))
-    f.close()
-    for server in server_list:
-        server.close()
-    log.info('BareMail exiting')
-
+        log.exception('uncaught server exception - {}'.format(msg))
+        return 1
 
 if __name__ == '__main__':
     try:
@@ -170,5 +85,11 @@ if __name__ == '__main__':
         print('Error: missing configuration file name')
         print('Usage: {} <config_file>'.format(sys.argv[0]))
         sys.exit(1)
+    try:
+        cfile = open(cfile_name, 'r')
+        cfgdict = json.load(cfile)
+    except Exception, msg:
+        print('Configuration file error - {}'.format(msg))
     else:
-        sys.exit(run_server(cfile_name))
+        sys.exit(run_server(cfgdict))
+
