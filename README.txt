@@ -1,8 +1,3 @@
-.. BareMail documentation master file, created by
-   sphinx-quickstart on Tue May  3 13:48:49 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 BareMail
 ========
 
@@ -86,6 +81,7 @@ To access BareMail over a LAN, copy one of the configuration files and modify th
 in the network settings to the name of the machine on which it's running.  Each of the servers can be
 configured individually so it's possible to have SMTP listen on a LAN interface but have POP3 only
 available to localhost.
+
 At this time, BareMail runs in the foreground attached to a terminal.  Proper
 daemonification is high on the todo list.
 
@@ -105,13 +101,3 @@ with a bit of patience and perserverance.
 * http://dovecot.org/
 * https://github.com/corecode/dma#dma----dragonfly-mail-agent
 
-Source Documentation
---------------------
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-.. toctree::
-   :maxdepth: 2
-
-   modules

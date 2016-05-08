@@ -139,7 +139,7 @@ mode.</p>
 
 <dl class="class">
 <dt id="baremail_smtp.smtp_server">
-<em class="property">class </em><tt class="descclassname">baremail_smtp.</tt><tt class="descname">smtp_server</tt><big>(</big><em>host</em>, <em>port</em>, <em>mb</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_server" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">baremail_smtp.</tt><tt class="descname">smtp_server</tt><big>(</big><em>host</em>, <em>port</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_server" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">asyncore.dispatcher</span></tt></p>
 <p>Listens on SMTP port and launch SMTP handler on connection.</p>
 <dl class="method">
@@ -147,6 +147,11 @@ mode.</p>
 <tt class="descname">handle_accept</tt><big>(</big><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_server.handle_accept" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates handler for each SMTP connection.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="baremail_smtp.smtp_server.set_mailbox">
+<tt class="descname">set_mailbox</tt><big>(</big><em>mb</em><big>)</big><a class="headerlink" href="#baremail_smtp.smtp_server.set_mailbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 

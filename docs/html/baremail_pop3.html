@@ -203,7 +203,7 @@ ensures consistency.</p>
 
 <dl class="class">
 <dt id="baremail_pop3.pop3_server">
-<em class="property">class </em><tt class="descclassname">baremail_pop3.</tt><tt class="descname">pop3_server</tt><big>(</big><em>host</em>, <em>port</em>, <em>mb</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_server" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">baremail_pop3.</tt><tt class="descname">pop3_server</tt><big>(</big><em>host</em>, <em>port</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_server" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">asyncore.dispatcher</span></tt></p>
 <p>Listens on POP3 port and launch pop3 handler on connection.</p>
 <dl class="method">
@@ -211,6 +211,11 @@ ensures consistency.</p>
 <tt class="descname">handle_accept</tt><big>(</big><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_server.handle_accept" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates handler for each POP3 connection.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="baremail_pop3.pop3_server.set_mailbox">
+<tt class="descname">set_mailbox</tt><big>(</big><em>mb</em><big>)</big><a class="headerlink" href="#baremail_pop3.pop3_server.set_mailbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
