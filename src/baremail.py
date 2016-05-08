@@ -17,6 +17,8 @@ import json
 import logging
 import logging.config
 import mailbox
+import os
+import pwd
 import sys
 
 from baremail_pop3 import pop3_server
@@ -40,23 +42,33 @@ def run_server(cfgdict=None):
         print('Server logging initialization error - {}'.format(msg))
         return 1
 
-    # grab login name here before switch to daemon mode
-    # login_name = os.getlogin()
+    try: # instantiate servers
+        server_list = []
+        server_list.append(pop3_server(cfgdict['network']['POP3']['host'],
+                                       cfgdict['network']['POP3']['port']))
+        for server in cfgdict['network']['SMTP']:
+            server_list.append(smtp_server(server['host'], server['port']))
+    except Exception, msg:
+        log.exception('server initialization error - {}'.format(msg))
+
+    if os.getuid() == 0: # running as root, see if priv can be dropped
+        log.info('pid {}'.format(os.getpid()))
+        try:
+            login_name = os.getlogin()
+            pw_info = pwd.getpwnam(login_name)
+            os.setgid(pw_info[3])
+            os.setuid(pw_info[2])
+        except Exception, msg:
+            log.exception('Unable to set user - {}'.format(msg))
+            return 1
 
     try:
         mb = mailbox.Maildir(cfgdict['global']['maildir'], factory=None, create=True)
         log.info('Mailbox directory {}'.format(cfgdict['global']['maildir']))
+        for server in server_list:
+            server.set_mailbox(mb)
     except Exception, msg:
         log.exception('mailbox initialization error - {}'.format(msg))
-    try:
-        server_list = []
-        pop3_host = cfgdict['network']['POP3']['host']
-        pop3_port = cfgdict['network']['POP3']['port']
-        server_list.append(pop3_server(pop3_host, pop3_port, mb))
-        for server in cfgdict['network']['SMTP']:
-            server_list.append(smtp_server(server['host'], server['port'], mb))
-    except Exception, msg:
-        log.exception('server initialization error - {}'.format(msg))
     try:
         asyncore.loop()
     except KeyboardInterrupt:

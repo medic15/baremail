@@ -4,14 +4,14 @@
   },
   "network": {
     "SMTP": [{"host": "localhost",
-              "port": 2025
+              "port": 25
              },
              {"host": "localhost",
-              "port": 2587
+              "port": 587
              }
             ],
     "POP3": {"host": "localhost",
-             "port": 2110}
+             "port": 110}
   },
   "logger_config": {
     "version": 1,

@@ -309,10 +309,9 @@ class pop3_handler(asynchat.async_chat):
 class pop3_server(asyncore.dispatcher):
     """Listens on POP3 port and launch pop3 handler on connection.
     """
-    def __init__(self, host, port, mb):
+    def __init__(self, host, port):
         log.info('Serving POP3 on {}:{}'.format(host, port))
         asyncore.dispatcher.__init__(self)
-        self.mbx = mb
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
         self.bind((host, port))
@@ -327,4 +326,6 @@ class pop3_server(asyncore.dispatcher):
             log.info('Incoming POP3 connection from %s' % repr(addr))
             handler = pop3_handler(sock, self.mbx)
 
+    def set_mailbox(self, mb):
+        self.mbx = mb
 
