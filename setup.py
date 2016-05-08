@@ -2,6 +2,7 @@
 
 from distutils.core import setup
 import glob
+import os
 
 # Utility function to read the README file.
 def read(fname):
@@ -10,7 +11,7 @@ def read(fname):
 setup(name = 'BareMail',
       version = '0.1.0',
       description = 'A pure Python email service',
-      long_description = read('READMT.txt')
+      long_description = read('README.txt'),
       author='Alan Willis',
       author_email='Alan Willis <baremail@samara-rt.com',
       url='https://github.com/medic15/baremail',
