@@ -38,8 +38,8 @@ def run_server(cfgdict=None):
         logging.config.dictConfig(cfgdict['logger_config'])
         # create logger
         log = logging.getLogger('baremail')
-    except Exception, msg:
-        print('Server logging initialization error - {}'.format(msg))
+    except Exception as msg:
+        print(('Server logging initialization error - {}'.format(msg)))
         return 1
 
     try: # instantiate servers
@@ -48,7 +48,7 @@ def run_server(cfgdict=None):
                                        cfgdict['network']['POP3']['port']))
         for server in cfgdict['network']['SMTP']:
             server_list.append(smtp_server(server['host'], server['port']))
-    except Exception, msg:
+    except Exception as msg:
         log.exception('server initialization error - {}'.format(msg))
 
     if os.getuid() == 0: # running as root, see if priv can be dropped
@@ -58,7 +58,7 @@ def run_server(cfgdict=None):
             pw_info = pwd.getpwnam(login_name)
             os.setgid(pw_info[3])
             os.setuid(pw_info[2])
-        except Exception, msg:
+        except Exception as msg:
             log.exception('Unable to set user - {}'.format(msg))
             return 1
 
@@ -67,14 +67,14 @@ def run_server(cfgdict=None):
         log.info('Mailbox directory {}'.format(cfgdict['global']['maildir']))
         for server in server_list:
             server.set_mailbox(mb)
-    except Exception, msg:
+    except Exception as msg:
         log.exception('mailbox initialization error - {}'.format(msg))
     try:
         asyncore.loop()
     except KeyboardInterrupt:
         log.info('cleaning up')
         return 0
-    except Exception, msg:
+    except Exception as msg:
         log.exception('uncaught server exception - {}'.format(msg))
         return 1
 
@@ -83,13 +83,13 @@ if __name__ == '__main__':
         cfile_name = sys.argv[1]
     except:
         print('Error: missing configuration file name')
-        print('Usage: {} <config_file>'.format(sys.argv[0]))
+        print(('Usage: {} <config_file>'.format(sys.argv[0])))
         sys.exit(1)
     try:
         cfile = open(cfile_name, 'r')
         cfgdict = json.load(cfile)
-    except Exception, msg:
-        print('Configuration file error - {}'.format(msg))
+    except Exception as msg:
+        print(('Configuration file error - {}'.format(msg)))
     else:
         sys.exit(run_server(cfgdict))
 

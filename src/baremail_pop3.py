@@ -58,7 +58,7 @@ class pop3_handler(asynchat.async_chat):
             return
 
         try:
-            for message_id, message in self.mbx.iteritems():
+            for message_id, message in self.mbx.items():
                 if message.get_subdir() == 'new':
                     self.add_new_messages(message_id)
                 id_number += 1
@@ -69,7 +69,7 @@ class pop3_handler(asynchat.async_chat):
             log.error('S: -ERR Error reading mailbox')
             self.push('-ERR Error reading mailbox')
             self.close_when_done()
-        except Exception, msg:
+        except Exception as msg:
             log.exception('Unknown mailbox access error - {}'.format(msg))
 
     def collect_incoming_data(self, data):
@@ -143,7 +143,7 @@ class pop3_handler(asynchat.async_chat):
             log.debug('Delete key {}'.format(id))
             try:
                 self.mbx.discard(id)
-            except Exception, exmsg:
+            except Exception as exmsg:
                 log.exception('Quit error - {}'.format(exmsg))
 
         return '+OK POP3 server signing off'
@@ -163,7 +163,7 @@ class pop3_handler(asynchat.async_chat):
                     mb_size += len(s)
                 except mailbox.Error:
                     pass
-        except Exception, exmsg:
+        except Exception as exmsg:
             log.exception('Unhandled exception {}'.format(exmsg))
             return '-ERR Internal Error'
         else:
@@ -191,7 +191,7 @@ class pop3_handler(asynchat.async_chat):
                     ret_msg_array.append(self.getScanListing(n))
                 ret_msg_array.append('.')
                 ret_msg = CRLF.join(ret_msg_array)
-            except Exception, exmsg:
+            except Exception as exmsg:
                 log.exception('handleList error - {}'.format(exmsg))
                 ret_msg = '-ERR Interal server error'
         return ret_msg
@@ -202,7 +202,7 @@ class pop3_handler(asynchat.async_chat):
         try:
             msg_num = int(args.split()[0])
             msg_string = self.mbx.get_string(self.msg_index[msg_num])
-        except Exception, exmsg:
+        except Exception as exmsg:
             log.exception('handleRetr error - {}'.format(exmsg))
             ret_msg = '-ERR invalid index {}'.format(msg_num)
         else:
@@ -218,7 +218,7 @@ class pop3_handler(asynchat.async_chat):
         try:
             msg_num = int(args.split()[0])
             msg_key = self.msg_index[msg_num]
-        except Exception, exmsg:
+        except Exception as exmsg:
             log.exception('handleDele error - {}'.format(exmsg))
             ret_msg = '-ERR invalid index {}'.format(msg_num)
         else:
@@ -265,7 +265,7 @@ class pop3_handler(asynchat.async_chat):
                     ret_msg_array.append(self.getUidlListing(n))
                 ret_msg_array.append('.')
                 ret_msg = CRLF.join(ret_msg_array)
-            except Exception, exmsg:
+            except Exception as exmsg:
                 log.exception('handleList error - {}'.format(exmsg))
                 ret_msg = '-ERR Interal server error'
         return ret_msg
@@ -303,7 +303,7 @@ class pop3_handler(asynchat.async_chat):
             new_message = mailbox.MaildirMessage(msg_string)
             new_message.set_subdir('cur')
             self.mbx[message_id] = new_message
-        except Exception, e:
+        except Exception as e:
             log.exception('mbx error - {}'.format(e))
 
 class pop3_server(asyncore.dispatcher):

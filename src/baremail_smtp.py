@@ -119,7 +119,7 @@ class smtp_handler(asynchat.async_chat):
                 log.info('accessing mbx in runData()')
                 msg_id = self.mbx.add(msg)
                 ret_str = '250 Ok: queued as {}'.format(msg_id)
-            except Exception, e:
+            except Exception as e:
                 ret_str = '451 could not save message {}'.format(msg_id)
                 log.exception('Error writing mailbox {}'.format(e))
                 msg_id = 'Error!!'
