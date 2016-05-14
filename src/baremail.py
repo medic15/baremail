@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """A pure Python email server
 
-BareMail provides servers for SMTP and POP3 to serve as
+BareMail provides servers for SMTP and POP3 to provide
 a simple mail system for local email messages.  It is intended primarily
 to service daemon processes that report events via email messages.  Daemon
 SMTP setup is greatly simplified since BareMail is extremely promiscuous,
