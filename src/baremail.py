@@ -70,6 +70,7 @@ def run_server(cfgdict=None):
         asyncore.loop()
     except KeyboardInterrupt:
         log.info('cleaning up')
+        logging.shutdown()
         return 0
     except Exception as msg:
         log.exception('uncaught server exception - {}'.format(msg))

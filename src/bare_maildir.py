@@ -19,11 +19,7 @@ def _sync_close(f):
 
 def _moveto(name, dest):
     try:
-        if hasattr(os, 'link'):
-            os.link(name, dest)
-            os.remove(name)
-        else:
-            os.rename(name, dest)
+        os.rename(name, dest)
     except OSError:
         log.exception('_moveto')
         os.remove(name)
@@ -55,21 +51,27 @@ class BareMaildir():
         """Initialize a Maildir instance."""
         self.entries = []
         self._path = dirname
+        self._tmp_dir = os.path.join(dirname, 'tmp')
         if not os.path.exists(self._path):
             os.mkdir(self._path, 0o700)
             log.debug('creating directory {}'.format(self._path))
         for fname in os.listdir(dirname):
-            log.debug('adding file {}'.format(fname))
+            log.debug('trying file {}'.format(fname))
             path = os.path.join(dirname, fname)
-            log.debug('adding file {}'.format(path))
-            msgfile = open(path, 'rb')
-            msg = BareMessage(msgfile)
-            self.entries.append(msg)
-            msgfile.close()
+            try:
+                msgfile = open(path, 'rb')
+                log.debug('adding file {}'.format(path))
+                msg = BareMessage(msgfile)
+                self.entries.append(msg)
+                msgfile.close()
+            except Exception:
+                log.exception('error adding file {}'.format(path))
 
     def add(self, msg_str):
         """Add message string and return assigned key."""
-        tmp_file = tempfile.NamedTemporaryFile(prefix='bare', delete=False)
+        tmp_file = tempfile.NamedTemporaryFile(dir=self._tmp_dir,
+                                               prefix='bare',
+                                               delete=False)
         log.debug('add message from string - {}'.format(tmp_file.name))
         try:
             tmp_file.file.write(msg_str)
