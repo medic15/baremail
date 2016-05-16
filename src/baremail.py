@@ -23,27 +23,23 @@ import sys
 from baremail_pop3 import pop3_server
 from baremail_smtp import smtp_server
 
-logging.basicConfig(datefmt='%d %b %H:%M:%S', level=logging.WARN)
-log = logging.getLogger('baremail')
+def config_logging(cfgdict):
+    """Configure logging from dictionary.
 
-def run_server(cfgdict=None):
-    """Configure and run the email servers.
-
-    Reads configuration from a JSON file and initializes the servers and
-    logging classes.  Logging configuration is included in the configuration
-    file as a JSON object.  When loaded, this yields a dictionary suitable
+    Logging configuration is included in the configuration file as a
+    JSON object.  When loaded, this yields a dictionary suitable
     for use with dictConfig().
-
-    :rtype: integer 0 for keyboard interrupt or 1 for failure at startup
     """
-    # try: #configure logging
-    #     logging.config.dictConfig(cfgdict['logger_config'])
-    #     # create logger
-    #     log = logging.getLogger('baremail')
-    # except Exception as msg:
-    #     print(('Server logging initialization error - {}'.format(msg)))
-    #     return 1
 
+    try: #configure logging
+        logging.config.dictConfig(cfgdict['logger_config'])
+        # create logger
+        log = logging.getLogger('baremail')
+    except Exception as msg:
+        print(('Server logging initialization error - {}'.format(msg)))
+        return 1
+
+def config_servers(cfgdict):
     try: # instantiate servers
         server_list = []
         server_list.append(pop3_server(cfgdict['network']['POP3']['host'],
@@ -54,7 +50,11 @@ def run_server(cfgdict=None):
                                            cfgdict['global']['maildir']))
     except Exception as msg:
         log.exception('server initialization error - {}'.format(msg))
+        return 1
+    return 0
 
+
+def daemonize(cfgdict):
     if os.getuid() == 0: # running as root, see if priv can be dropped
         log.info('pid {}'.format(os.getpid()))
         try:
@@ -66,6 +66,13 @@ def run_server(cfgdict=None):
             log.exception('Unable to set user - {}'.format(msg))
             return 1
 
+
+
+def run_server():
+    """Run service loop
+
+    :rtype: integer 0 for keyboard interrupt or 1 for failure at startup
+    """
     try:
         asyncore.loop()
     except KeyboardInterrupt:
@@ -88,6 +95,12 @@ if __name__ == '__main__':
         cfgdict = json.load(cfile)
     except Exception as msg:
         print(('Configuration file error - {}'.format(msg)))
-    else:
-        sys.exit(run_server(cfgdict))
+
+    if config_logging(cfgdict['logger_config']) != 0:
+        sys.exit(1)
+    if config_servers(cfgdict) != 0:
+        sys.exit(1)
+    if daemonize(cfgdict) != 0:
+        sys.exit(1)
+    sys.exit(run_server(cfgdict))
 

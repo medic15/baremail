@@ -1,6 +1,7 @@
 {
   "global": {
-    "maildir": "MailboxDir"
+    "maildir": "MailboxDir",
+    "working_dir": "."
   },
   "network": {
     "SMTP": [{"host": "localhost",
