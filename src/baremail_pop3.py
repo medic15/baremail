@@ -10,8 +10,8 @@ needed to identify messages for retreival or deletion is kept.
 
 import asynchat
 import asyncore
+import bare_maildir
 import logging
-import mailbox
 import mutex
 import socket
 
@@ -35,7 +35,7 @@ class pop3_handler(asynchat.async_chat):
     each client connection.  Messages received after that point will not be visible
     to the client until the next connection occurs.
     """
-    def __init__(self, sock, mbx):
+    def __init__(self, sock, mb_name):
         asynchat.async_chat.__init__(self, sock=sock)
         self.dispatch = dict(QUIT=self.handleQuit, STAT=self.handleStat,
                              LIST=self.handleList, RETR=self.handleRetr,
@@ -43,30 +43,22 @@ class pop3_handler(asynchat.async_chat):
                              RSET=self.handleRset, USER=self.handleOK,
                              PASS=self.handleOK, APOP=self.handleOK,
                              UIDL=self.handleUidl, CAPA=self.handleCapa)
-        self.mbx = mbx
         self.set_terminator(CRLF)
         self.buffer = []
-        self.msg_index = []
-        self.delete_list = []
-        id_number = 0;
 
         self.mbx_lock = pop3_mutex.testandset()
         if not self.mbx_lock:
             log.info('S: -ERR Mailbox busy.  Try again later.')
-            self.push('-ERR Mailbox busy.  Try again later.')
+            self.push('-ERR Mailbox busy. Try again later.')
             self.close_when_done()
             return
 
         try:
-            for message_id, message in self.mbx.items():
-                if message.get_subdir() == 'new':
-                    self.add_new_messages(message_id)
-                id_number += 1
-                self.msg_index.append(message_id)
+            self.mbx = bare_maildir.BareMaildir(mb_name)
             log.debug('S: +OK POP3 server ready')
             self.push('+OK POP3 server ready')
-        except mailbox.Error:
-            log.error('S: -ERR Error reading mailbox')
+        except Exception:
+            log.exception('S: -ERR Error reading mailbox')
             self.push('-ERR Error reading mailbox')
             self.close_when_done()
         except Exception as msg:
@@ -122,6 +114,10 @@ class pop3_handler(asynchat.async_chat):
         asynchat.async_chat.handle_close(self)
         if self.mbx_lock:
             pop3_mutex.unlock()
+        try:
+            self.mbx.close()
+        except Exception:
+            pass
 
     def push(self, msg):
         """Overrides base class for convenience
@@ -139,12 +135,7 @@ class pop3_handler(asynchat.async_chat):
         the client are removed from the mail directory here before the response
         is issued to the client.
         """
-        for id in self.delete_list:
-            log.debug('Delete key {}'.format(id))
-            try:
-                self.mbx.discard(id)
-            except Exception as exmsg:
-                log.exception('Quit error - {}'.format(exmsg))
+        self.mbx.close()
 
         return '+OK POP3 server signing off'
 
@@ -156,39 +147,36 @@ class pop3_handler(asynchat.async_chat):
         num_msgs = 0;
         mb_size = 0;
         try:
-            for k in self.msg_index:
-                try:
-                    s = self.mbx.get_string(k)
-                    num_msgs += 1
-                    mb_size += len(s)
-                except mailbox.Error:
-                    pass
+            messages = self.mbx.items()
+            num_msgs = len(messages)
+            for msg in messages:
+                mb_size += msg.length
         except Exception as exmsg:
             log.exception('Unhandled exception {}'.format(exmsg))
             return '-ERR Internal Error'
         else:
             return '+OK {} {}'.format(num_msgs, mb_size)
 
-    def getScanListing(self, msg_num):
+    def getScanListing(self, msg_num, msg_list):
         """Return a message index and size for a single message
         """
-        # TODO: use mbx __len__ instead of getting string
-        return '{} {}'.format(msg_num, len(self.mbx.get_string(self.msg_index[msg_num])))
+        return '{} {}'.format(msg_num, msg_list[msg_num].length)
 
     def handleList(self, cmd, args):
         """Return a listing of messages in the mailbox
         """
+        msg_list = self.mbx.items()
         if args:
             try:
                 msg_num = int(args.split()[0])
-                ret_msg = '+OK {}'.format(self.getScanListing(msg_num))
+                ret_msg = '+OK {}'.format(self.getScanListing(msg_num, msg_list))
             except Exception:
                 ret_msg = '-ERR invalid index {}'.format(args)
         else:
             try:
-                ret_msg_array = ['+OK {} messages'.format(len(self.msg_index))]
-                for n in range(len(self.msg_index)):
-                    ret_msg_array.append(self.getScanListing(n))
+                ret_msg_array = ['+OK {} messages'.format(len(msg_list))]
+                for n in range(len(msg_list)):
+                    ret_msg_array.append(self.getScanListing(n, msg_list))
                 ret_msg_array.append('.')
                 ret_msg = CRLF.join(ret_msg_array)
             except Exception as exmsg:
@@ -201,7 +189,7 @@ class pop3_handler(asynchat.async_chat):
         """
         try:
             msg_num = int(args.split()[0])
-            msg_string = self.mbx.get_string(self.msg_index[msg_num])
+            msg_string = self.mbx.get_string(msg_num)
         except Exception as exmsg:
             log.exception('handleRetr error - {}'.format(exmsg))
             ret_msg = '-ERR invalid index {}'.format(msg_num)
@@ -217,13 +205,11 @@ class pop3_handler(asynchat.async_chat):
         """
         try:
             msg_num = int(args.split()[0])
-            msg_key = self.msg_index[msg_num]
+            msg_key = self.mbx.delete(msg_num)
+            ret_msg = '+OK message {} deleted'.format(msg_num)
         except Exception as exmsg:
             log.exception('handleDele error - {}'.format(exmsg))
             ret_msg = '-ERR invalid index {}'.format(msg_num)
-        else:
-            self.delete_list.append(msg_key)
-            ret_msg = '+OK message {} deleted'.format(msg_num)
         return ret_msg
 
     def handleOK(self, cmd, args):
@@ -234,16 +220,16 @@ class pop3_handler(asynchat.async_chat):
     def handleRset(self, cmd, args):
         """Unmarks messages tagged for deletion
         """
-        self.delete_list = []
+        self.mbx.reset()
         return '+OK'
 
-    def getUidlListing(self, msg_num):
+    def getUidlListing(self, msg_num, msg_list):
         """Return the index and unique identifier for an individual message
 
         The unique identifier returned here is simply the file name of the
         message in the mail directory.
         """
-        return '{} {}'.format(msg_num, self.msg_index[msg_num])
+        return '{} {}'.format(msg_num, msg_list[msg_num].basename)
 
     def handleUidl(self, cmd, args):
         """Return a UIDL listing for a single message or for all messages
@@ -252,6 +238,7 @@ class pop3_handler(asynchat.async_chat):
         by the client.  Otherwise returns a list of all message UIDLs for the
         mailbox.
         """
+        msg_list = self.mbx.items()
         if args:
             try:
                 msg_num = int(args.split()[0])
@@ -260,9 +247,9 @@ class pop3_handler(asynchat.async_chat):
                 ret_msg = '-ERR invalid index {}'.format(args)
         else:
             try:
-                ret_msg_array = ['+OK {} messages'.format(len(self.msg_index))]
-                for n in range(len(self.msg_index)):
-                    ret_msg_array.append(self.getUidlListing(n))
+                ret_msg_array = ['+OK {} messages'.format(len(msg_list))]
+                for n in range(len(msg_list)):
+                    ret_msg_array.append(self.getUidlListing(n, msg_list))
                 ret_msg_array.append('.')
                 ret_msg = CRLF.join(ret_msg_array)
             except Exception as exmsg:
@@ -280,37 +267,12 @@ class pop3_handler(asynchat.async_chat):
         caps_list.append('.')
         return CRLF.join(caps_list)
 
-    def add_new_messages(self, message_id):
-        """Normalize and add a message to the mailbox
-
-        POP3 requires that the statistics for file size reflect the number of
-        octets that will be sent in response to a RETR command.  To take in to
-        account the two octet CRLF at the end of each line, we process each newly
-        submitted message such that the lines are properly terminated for retreival.
-
-        Also, any lines in the message that begin with a '.' are byte stuffed
-        to avoid being mistaken for the message terminator.  This is per the
-        RFC specifying the message syntax.
-        """
-        norm_array = []
-        try:
-            msg_array = self.mbx.get_string(message_id).splitlines()
-            for line in msg_array:
-                if line == '.':
-                    line = '..'
-                norm_array.append(line)
-            msg_string = '\r\n'.join(norm_array)
-            new_message = mailbox.MaildirMessage(msg_string)
-            new_message.set_subdir('cur')
-            self.mbx[message_id] = new_message
-        except Exception as e:
-            log.exception('mbx error - {}'.format(e))
-
 class pop3_server(asyncore.dispatcher):
     """Listens on POP3 port and launch pop3 handler on connection.
     """
-    def __init__(self, host, port):
+    def __init__(self, host, port, mb_name):
         log.info('Serving POP3 on {}:{}'.format(host, port))
+        self.mb_name = mb_name
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
@@ -324,8 +286,6 @@ class pop3_server(asyncore.dispatcher):
         if pair is not None:
             sock, addr = pair
             log.info('Incoming POP3 connection from %s' % repr(addr))
-            handler = pop3_handler(sock, self.mbx)
-
-    def set_mailbox(self, mb):
-        self.mbx = mb
+            #handler = pop3_handler(sock, self.mb_name)
+            pop3_handler(sock, self.mb_name)
 

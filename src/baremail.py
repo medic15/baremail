@@ -16,13 +16,15 @@ import asyncore
 import json
 import logging
 import logging.config
-import mailbox
 import os
 import pwd
 import sys
 
 from baremail_pop3 import pop3_server
 from baremail_smtp import smtp_server
+
+logging.basicConfig(datefmt='%d %b %H:%M:%S', level=logging.DEBUG)
+log = logging.getLogger('baremail')
 
 def run_server(cfgdict=None):
     """Configure and run the email servers.
@@ -34,20 +36,22 @@ def run_server(cfgdict=None):
 
     :rtype: integer 0 for keyboard interrupt or 1 for failure at startup
     """
-    try: #configure logging
-        logging.config.dictConfig(cfgdict['logger_config'])
-        # create logger
-        log = logging.getLogger('baremail')
-    except Exception as msg:
-        print(('Server logging initialization error - {}'.format(msg)))
-        return 1
+    # try: #configure logging
+    #     logging.config.dictConfig(cfgdict['logger_config'])
+    #     # create logger
+    #     log = logging.getLogger('baremail')
+    # except Exception as msg:
+    #     print(('Server logging initialization error - {}'.format(msg)))
+    #     return 1
 
     try: # instantiate servers
         server_list = []
         server_list.append(pop3_server(cfgdict['network']['POP3']['host'],
-                                       cfgdict['network']['POP3']['port']))
+                                       cfgdict['network']['POP3']['port'],
+                                       cfgdict['global']['maildir']))
         for server in cfgdict['network']['SMTP']:
-            server_list.append(smtp_server(server['host'], server['port']))
+            server_list.append(smtp_server(server['host'], server['port'],
+                                           cfgdict['global']['maildir']))
     except Exception as msg:
         log.exception('server initialization error - {}'.format(msg))
 
@@ -62,13 +66,6 @@ def run_server(cfgdict=None):
             log.exception('Unable to set user - {}'.format(msg))
             return 1
 
-    try:
-        mb = mailbox.Maildir(cfgdict['global']['maildir'], factory=None, create=True)
-        log.info('Mailbox directory {}'.format(cfgdict['global']['maildir']))
-        for server in server_list:
-            server.set_mailbox(mb)
-    except Exception as msg:
-        log.exception('mailbox initialization error - {}'.format(msg))
     try:
         asyncore.loop()
     except KeyboardInterrupt:

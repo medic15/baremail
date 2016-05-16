@@ -4,11 +4,11 @@ Implements a simple SMTP server.  Commands implementing login or security
 features always return positive responses.
 """
 
-import asyncore
 import asynchat
-import socket
-import mailbox
+import asyncore
+import bare_maildir
 import logging
+import socket
 
 # create logger
 log = logging.getLogger('baremail.smtp')
@@ -26,16 +26,17 @@ class smtp_handler(asynchat.async_chat):
     STATE_COMMAND = 0
     STATE_DATA = 1
 
-    def __init__(self, sock, mbx):
+    def __init__(self, sock, mb_name):
         """Initialize minimal state and return greeting to client
         """
+        log.debug('new smpt handler - {}'.format(mb_name))
         asynchat.async_chat.__init__(self, sock=sock)
         self.dispatch = dict(EHLO=self.handleHelo, HELO=self.handleHelo,
                              MAIL=self.handleOK, RCPT=self.handleOK,
                              DATA=self.handleData, RSET=self.handleOK,
                              NOOP=self.handleOK, QUIT=self.handleQuit)
         self.fqdn = socket.getfqdn()
-        self.mbx = mbx
+        self.mbx = bare_maildir.BareMaildir(mb_name)
         self.set_terminator(CRLF)
         self.buffer = []
         self.data = []
@@ -98,6 +99,7 @@ class smtp_handler(asynchat.async_chat):
         Every response to client ends in CRLF.  Adding it here
         ensures consistency.
         """
+        log.debug('S:{}'.format(msg))
         asynchat.async_chat.push(self, msg + CRLF)
 
     def runData(self, msg):
@@ -112,9 +114,8 @@ class smtp_handler(asynchat.async_chat):
         ret_str = ''
         log.debug('C: {}'.format(msg))
         if msg == '.':
-            text = CRLF.join(self.data)
+            msg = CRLF.join(self.data)
             # write to mailbox
-            msg = mailbox.MaildirMessage(text)
             try:
                 log.info('accessing mbx in runData()')
                 msg_id = self.mbx.add(msg)
@@ -155,8 +156,9 @@ class smtp_handler(asynchat.async_chat):
 class smtp_server(asyncore.dispatcher):
     """Listens on SMTP port and launch SMTP handler on connection.
     """
-    def __init__(self, host, port):
+    def __init__(self, host, port, mb_name):
         log.info('Serving SMTP on {}:{}'.format(host, port))
+        self.mb_name = mb_name
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
@@ -170,8 +172,6 @@ class smtp_server(asyncore.dispatcher):
         if pair is not None:
             sock, addr = pair
             log.info('Incoming SMTP connection from %s' % repr(addr))
-            handler = smtp_handler(sock, self.mbx)
-
-    def set_mailbox(self, mb):
-        self.mbx = mb
+            handler = smtp_handler(sock, self.mb_name)
+            #smtp_handler(sock, self.mb_name)
 
