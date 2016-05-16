@@ -55,17 +55,21 @@ class BareMaildir():
         if not os.path.exists(self._path):
             os.mkdir(self._path, 0o700)
             log.debug('creating directory {}'.format(self._path))
+        if not os.path.exists(self._tmp_dir):
+            os.mkdir(self._tmp_dir, 0o700)
+            log.debug('creating directory {}'.format(self._tmp_dir))
         for fname in os.listdir(dirname):
-            log.debug('trying file {}'.format(fname))
-            path = os.path.join(dirname, fname)
-            try:
-                msgfile = open(path, 'rb')
-                log.debug('adding file {}'.format(path))
-                msg = BareMessage(msgfile)
-                self.entries.append(msg)
-                msgfile.close()
-            except Exception:
-                log.exception('error adding file {}'.format(path))
+            if fname != 'tmp':
+                log.debug('trying file {}'.format(fname))
+                path = os.path.join(dirname, fname)
+                try:
+                    msgfile = open(path, 'rb')
+                    log.debug('adding file {}'.format(path))
+                    msg = BareMessage(msgfile)
+                    self.entries.append(msg)
+                    msgfile.close()
+                except Exception:
+                    log.exception('error adding file {}'.format(path))
 
     def add(self, msg_str):
         """Add message string and return assigned key."""

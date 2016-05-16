@@ -23,7 +23,7 @@ import sys
 from baremail_pop3 import pop3_server
 from baremail_smtp import smtp_server
 
-logging.basicConfig(datefmt='%d %b %H:%M:%S', level=logging.DEBUG)
+logging.basicConfig(datefmt='%d %b %H:%M:%S', level=logging.WARN)
 log = logging.getLogger('baremail')
 
 def run_server(cfgdict=None):
