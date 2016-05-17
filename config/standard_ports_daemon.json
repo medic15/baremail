@@ -1,0 +1,60 @@
+{
+  "global": {
+  },
+  "servers": {
+    "maildir": "MailboxDir",
+    "SMTP": [{"host": "localhost",
+              "port": 25
+             },
+             {"host": "localhost",
+              "port": 587
+             }
+            ],
+    "POP3": {"host": "localhost",
+             "port": 110}
+  },
+  "daemon": {
+      "working_dir": "/var/mail",
+      "pid_file": "/var/run/baremail.pid"
+  },
+  "user_group": {
+      "user": "mail",
+      "group": "mail"
+  },
+  "logger_config": {
+    "version": 1,
+    "disable_existing_loggers": true,
+    "formatters": {
+      "simple": {
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        "datefmt": "%d %b %H:%M:%S"
+      }
+    },
+    "handlers": {
+      "console": {
+        "class": "logging.StreamHandler",
+        "level": "INFO",
+        "formatter": "simple",
+        "stream": "ext://sys.stdout"
+      },
+      "log_file_handler": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "level": "INFO",
+        "formatter": "simple",
+        "filename": "/var/log/baremail.log",
+        "maxBytes": 1048576,
+        "backupCount": 5,
+        "encoding": "utf8"
+      }
+    },
+    "loggers": {
+      "baremail": {
+        "level": "INFO",
+        "handlers": [
+          "log_file_handler"
+        ],
+        "propagate": "no"
+      }
+    }
+  }
+}

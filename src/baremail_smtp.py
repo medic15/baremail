@@ -172,6 +172,6 @@ class smtp_server(asyncore.dispatcher):
         if pair is not None:
             sock, addr = pair
             log.info('Incoming SMTP connection from %s' % repr(addr))
-            handler = smtp_handler(sock, self.mb_name)
-            #smtp_handler(sock, self.mb_name)
+            #handler = smtp_handler(sock, self.mb_name)
+            smtp_handler(sock, self.mb_name)
 

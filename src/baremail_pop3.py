@@ -205,7 +205,7 @@ class pop3_handler(asynchat.async_chat):
         """
         try:
             msg_num = int(args.split()[0])
-            msg_key = self.mbx.delete(msg_num)
+            self.mbx.delete(msg_num)
             ret_msg = '+OK message {} deleted'.format(msg_num)
         except Exception as exmsg:
             log.exception('handleDele error - {}'.format(exmsg))
