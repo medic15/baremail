@@ -17,9 +17,8 @@
       "working_dir": "/var/mail",
       "pid_file": "/var/run/baremail.pid"
   },
-  "user_group": {
-      "user": "mail",
-      "group": "mail"
+  "user": {
+      "user": "mail"
   },
   "logger_config": {
     "version": 1,

@@ -39,6 +39,7 @@ def config_logging(cfgdict):
     except Exception as msg:
         print(('Server logging initialization error - {}'.format(msg)))
         return 1
+    return 0
 
 def config_servers(cfgdict):
     global server_list
@@ -58,45 +59,27 @@ def config_servers(cfgdict):
     return 0
 
 
-def set_user(cfgdict=None):
+def set_user(user):
     if os.getuid() == 0: # running as root, see if priv can be dropped
-        if cfgdict is not None:
-            if cfgdict["group"] == 'root':
-                log.error('group root not allowed')
-                return 1
-            if cfgdict["user"] == 'root':
-                log.error('user root not allowed')
-                return 1
-            try:
-                os.setgid(cfgdict["group"])
-                os.setuid(cfgdict["user"])
-            except Exception as msg:
-                log.exception('Unable to set user - {}'.format(msg))
-                return 1
-        else:
-            try: # try to drop to login user
-                login_name = os.getlogin()
-                if login_name == 'root':
-                    log.error('user root not allowed')
-                    return 1
-                pw_info = pwd.getpwnam(login_name)
-                os.setgid(pw_info[3])
-                os.setuid(pw_info[2])
-            except Exception as msg:
-                log.exception('Unable to set user - {}'.format(msg))
-                return 1
+        if user == 'root':
+            log.error('user root not allowed')
+            return 1
+        try:
+            pw_info = pwd.getpwnam(user)
+            os.setgid(pw_info[3])
+            os.setuid(pw_info[2])
+        except Exception as msg:
+            log.exception('Unable to set user - {}'.format(msg))
+            return 1
     else:
         log.info('Not started as root.  Not setting user')
     return 0
 
 def daemonize(cfgdict):
     try:
-        import daemon
-        daemon.WORKDIR = cfgdict['working_dir']
-        daemon.createDaemon()
-        pidfile = open(cfgdict['pid_file'], 'w')
-        pidfile.write(os.getpid())
-        pidfile.close()
+        import bare_daemon
+        bare_daemon.WORKDIR = cfgdict['working_dir']
+        bare_daemon.createDaemon()
         return 0
     except Exception, e:
         print('Error daemonizing - {}'.format(e))
@@ -105,7 +88,9 @@ def daemonize(cfgdict):
 def run_server():
     """Run service loop"""
     try:
+        log.info('starting loop')
         asyncore.loop()
+        log.info('exited loop!!')
     except KeyboardInterrupt:
         log.info('cleaning up')
         for server in server_list:
@@ -114,9 +99,11 @@ def run_server():
         return 0
     except Exception as msg:
         log.exception('uncaught server exception - {}'.format(msg))
-        return 1
+    log.info('closing server unexpectedly')
+    return 1
 
 if __name__ == '__main__':
+    login_name = os.getlogin()
     try:
         cfile_name = sys.argv[1]
     except:
@@ -136,14 +123,26 @@ if __name__ == '__main__':
         sys.exit(1)
     log.info('logging configured')
     log.info('PID {}'.format(os.getpid()))
+    try:
+        pidfile = open(cfgdict['daemon']['pid_file'], 'w')
+        pidfile.write('{}\n'.format(os.getpid()))
+        pidfile.close()
+    except Exception:
+        log.exception('Error writing PID file')
+
     if config_servers(cfgdict['servers']) != 0:
         sys.exit(1)
     log.info('server configuration done')
-    if cfgdict.has_key("user_group"):
-        if set_user(cfgdict["user_group"]) != 0:
+    if cfgdict.has_key("user"):
+        log.info('setting user to {}'.format(cfgdict["user"]["user"]))
+        if set_user(cfgdict["user"]["user"]) != 0:
+            log.error('Error setting user')
             sys.exit(1)
     else:
-        if set_user() != 0:
+        log.info('setting user to {}'.format(login_name))
+        if set_user(login_name) != 0:
+            log.error('Error setting user')
             sys.exit(1)
-    sys.exit(run_server(cfgdict))
+    log.info('user set, running server')
+    sys.exit(run_server())
 
