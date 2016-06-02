@@ -103,7 +103,11 @@ def run_server():
     return 1
 
 if __name__ == '__main__':
-    login_name = os.getlogin()
+    try:
+        login_name = os.getlogin()
+    except Exception:
+        login_name = 'nobody'
+
     try:
         cfile_name = sys.argv[1]
     except:
