@@ -128,15 +128,17 @@ if __name__ == '__main__':
     log.info('logging configured')
     log.info('PID {}'.format(os.getpid()))
     try:
-        pidfile = open(cfgdict['daemon']['pid_file'], 'w')
-        pidfile.write('{}\n'.format(os.getpid()))
-        pidfile.close()
+        if cfgdict.has_key("daemon"):
+            pidfile = open(cfgdict['daemon']['pid_file'], 'w')
+            pidfile.write('{}\n'.format(os.getpid()))
+            pidfile.close()
     except Exception:
         log.exception('Error writing PID file')
 
-    if config_servers(cfgdict['servers']) != 0:
-        sys.exit(1)
-    log.info('server configuration done')
+    if cfgdict.has_key('servers'):
+        if config_servers(cfgdict['servers']) != 0:
+            sys.exit(1)
+        log.info('server configuration done')
     if cfgdict.has_key("user"):
         log.info('setting user to {}'.format(cfgdict["user"]["user"]))
         if set_user(cfgdict["user"]["user"]) != 0:
